@@ -1,7 +1,7 @@
 package com.comp455.httpclient;
 
 import com.comp455.httpclient.argparser.ArgParser;
-import com.comp455.httpclient.argparser.Command;
+import com.comp455.httpclient.command.Command;
 
 import java.util.Optional;
 
@@ -10,11 +10,23 @@ public class Main {
         // parse cli args
         Optional<Command> command = new ArgParser(args).parse();
 
-        System.out.println("yope");
+        if(command.isEmpty()) {
+            // TODO: maybe change to HelpCommand.run() ?
+            System.err.println("Error parsing args");
+            System.exit(1);
+        }
 
-        // depending on mode of operation, call http client library
-
-        //
-
+        Command c = command.get();
+        switch (c.getCommandType()) {
+            case HELP:
+                c.run();
+                break;
+            case HTTP_GET:
+                break;
+            case HTTP_POST:
+                break;
+            case UNKNOWN:
+                break;
+        }
     }
 }

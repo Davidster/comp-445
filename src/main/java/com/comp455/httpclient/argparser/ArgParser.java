@@ -1,6 +1,6 @@
 package com.comp455.httpclient.argparser;
 
-import lombok.SneakyThrows;
+import com.comp455.httpclient.command.*;
 import org.apache.commons.cli.*;
 
 import java.util.*;
@@ -30,9 +30,10 @@ public class ArgParser {
                 parsedCommand = buildHelpCommand(commandArgs);
                 break;
             case "get":
+                parsedCommand = buildGetCommand(commandArgs);
+                break;
             case "post":
-                RequestMethod requestMethod = RequestMethod.valueOf(commandName.toUpperCase());
-                parsedCommand = buildHttpCommand(requestMethod, commandArgs);
+                parsedCommand = buildPostCommand(commandArgs);
                 break;
             default:
                 parsedCommand = buildUnknownCommand(argList.get(0));
@@ -49,47 +50,69 @@ public class ArgParser {
             return helpCommand;
         }
 
-        CommandType commandToDescribe = CommandType.valueOf(commandArgs.get(0).toUpperCase());
-        helpCommand.setCommandToDescribe(Optional.of(commandToDescribe));
+        CommandType commandToDescribe = CommandType.UNKNOWN;
+        switch(commandArgs.get(0)) {
+            case "get":
+                commandToDescribe = CommandType.HTTP_GET;
+                break;
+            case "post":
+                commandToDescribe = CommandType.HTTP_POST;
+                break;
+        }
+        helpCommand.setCommandToDescribe(commandToDescribe);
         return helpCommand;
     }
 
-    private HttpCommand buildHttpCommand(RequestMethod requestMethod, List<String> commandArgs) {
-        HttpCommand httpCommand = new HttpCommand(requestMethod);
+    private GetCommand buildGetCommand(List<String> commandArgs) {
+        GetCommand getCommand = new GetCommand();
+        parseCommonHttpOptions(getCommand, commandArgs);
+        return getCommand;
+    }
 
+    private PostCommand buildPostCommand(List<String> commandArgs) {
+        PostCommand postCommand = new PostCommand();
+        Optional<CommandLine> optCmd = parseCommonHttpOptions(postCommand, commandArgs);
+
+        optCmd.ifPresent(cmd -> {
+            postCommand.setInlineData(cmd.getOptionValue("d"));
+            postCommand.setDataFile(cmd.getOptionValue("f"));
+        });
+
+        return postCommand;
+    }
+
+    private UnknownCommand buildUnknownCommand(String command) {
+        return new UnknownCommand(command);
+    }
+
+    private Optional<CommandLine> parseCommonHttpOptions(HttpCommand httpCommand, List<String> commandArgs) {
         if(commandArgs.size() < 1) {
-            return httpCommand;
+            return Optional.empty();
         }
 
         String requestUrl = commandArgs.remove(commandArgs.size() - 1);
-        httpCommand.setRequestUrl(Optional.of(requestUrl));
+        httpCommand.setRequestUrl(requestUrl);
 
         if(commandArgs.size() < 1) {
-            return httpCommand;
+            return Optional.empty();
         }
 
         CommandOptionsParser commandOptionsParser = new CommandOptionsParser();
         CommandLine cmd = commandOptionsParser.parse(commandArgs);
 
         httpCommand.setVerbose(cmd.hasOption("v"));
-        httpCommand.setInlineData(Optional.ofNullable(cmd.getOptionValue("d")));
-        httpCommand.setFileData(Optional.ofNullable(cmd.getOptionValue("f")));
 
         // parse header values and insert them into a map
         String[] headerArgs = cmd.getOptionValues("h");
         if(headerArgs != null && headerArgs.length > 0) {
             httpCommand.setHeaders(
-                Stream.of(headerArgs)
-                        .map(headerArg -> headerArg.split(":"))
-                        .collect(Collectors.toMap(
-                            headerArgSplit -> headerArgSplit[0],
-                            headerArgSplit -> headerArgSplit[1])));
+                    Stream.of(headerArgs)
+                            .map(headerArg -> headerArg.split(":"))
+                            .collect(Collectors.toMap(
+                                    headerArgSplit -> headerArgSplit[0],
+                                    headerArgSplit -> headerArgSplit[1])));
         }
 
-        return httpCommand;
-    }
-
-    private UnknownCommand buildUnknownCommand(String command) {
-        return new UnknownCommand(command);
+        return Optional.of(cmd);
     }
 }

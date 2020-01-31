@@ -1,4 +1,4 @@
-package com.comp455.httpclient.argparser;
+package com.comp455.httpclient.command;
 
 public class UnknownCommand extends Command {
     private String unknownCommand;
@@ -6,5 +6,10 @@ public class UnknownCommand extends Command {
     public UnknownCommand(String unknownCommand) {
         super(CommandType.UNKNOWN);
         this.unknownCommand = unknownCommand;
+    }
+
+    @Override
+    public void run() {
+        // TODO
     }
 }

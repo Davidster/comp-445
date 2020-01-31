@@ -1,4 +1,4 @@
-package com.comp455.httpclient.argparser;
+package com.comp455.httpclient.client;
 
 import java.util.List;
 
