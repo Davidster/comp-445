@@ -16,17 +16,6 @@ public class Main {
             System.exit(1);
         }
 
-        Command c = command.get();
-        switch (c.getCommandType()) {
-            case HELP:
-                c.run();
-                break;
-            case HTTP_GET:
-                break;
-            case HTTP_POST:
-                break;
-            case UNKNOWN:
-                break;
-        }
+        command.get().run();
     }
 }
