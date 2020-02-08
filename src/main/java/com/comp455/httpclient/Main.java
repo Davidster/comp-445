@@ -2,20 +2,27 @@ package com.comp455.httpclient;
 
 import com.comp455.httpclient.argparser.ArgParser;
 import com.comp455.httpclient.command.Command;
-
-import java.util.Optional;
+import com.comp455.httpclient.command.CommandType;
+import com.comp455.httpclient.command.HelpCommand;
+import com.comp455.httpclient.command.HttpCommand;
+import com.comp455.httpclient.logger.LogLevel;
+import com.comp455.httpclient.logger.Logger;
 
 public class Main {
     public static void main(String[] args) {
         // parse cli args
-        Optional<Command> command = new ArgParser(args).parse();
+        Command command = new ArgParser(args).parse()
+                .orElse(new HelpCommand());
+        CommandType commandType = command.getCommandType();
 
-        if(command.isEmpty()) {
-            // TODO: maybe change to HelpCommand.run() ?
-            System.err.println("Error parsing args");
-            System.exit(1);
+        // set the log level
+        switch(commandType) {
+            case HTTP_GET:
+            case HTTP_POST:
+                Logger.logLevel = ((HttpCommand)command).isVerbose() ? LogLevel.VERBOSE : LogLevel.INFO;
         }
 
-        command.get().run();
+        // run the command
+        command.run();
     }
 }

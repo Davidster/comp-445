@@ -1,5 +1,6 @@
 package com.comp455.httpclient.command;
 
+import com.comp455.httpclient.logger.Logger;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -51,16 +52,16 @@ public class HelpCommand extends Command {
     @Override
     public void run() {
         if(commandToDescribe == null) {
-            System.out.println(BASE_HELP);
+            Logger.log(BASE_HELP);
             return;
         }
 
         switch (commandToDescribe) {
             case HTTP_GET:
-                System.out.println(GET_HELP);
+                Logger.log(GET_HELP);
                 break;
             case HTTP_POST:
-                System.out.println(POST_HELP);
+                Logger.log(POST_HELP);
                 break;
         }
     }

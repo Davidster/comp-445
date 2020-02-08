@@ -109,8 +109,8 @@ public class ArgParser {
                     Stream.of(headerArgs)
                             .map(headerArg -> headerArg.split(":"))
                             .collect(Collectors.toMap(
-                                    headerArgSplit -> headerArgSplit[0],
-                                    headerArgSplit -> headerArgSplit[1])));
+                                    headerArgSplit -> headerArgSplit[0].trim(),
+                                    headerArgSplit -> headerArgSplit[1].trim())));
         }
 
         return Optional.of(cmd);
