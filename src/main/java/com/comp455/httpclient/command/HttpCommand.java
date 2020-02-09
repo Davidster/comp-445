@@ -5,11 +5,11 @@ import com.comp455.httpclient.logger.LogLevel;
 import com.comp455.httpclient.logger.Logger;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.io.FileUtils;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,7 +37,7 @@ public abstract class HttpCommand extends Command {
 
     protected void postResponse(HttpResponse response) throws IOException {
         if(this.outputFilePath != null) {
-            FileUtils.writeStringToFile(new File(this.outputFilePath), response.getBody(), StandardCharsets.UTF_8);
+            Files.writeString(Paths.get(this.outputFilePath), response.getBody(), StandardOpenOption.TRUNCATE_EXISTING);
         }
     }
 }
