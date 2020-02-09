@@ -120,7 +120,7 @@ public class HttpClient {
                             (val1, val2) -> val1));
 
         String resVDelimiter = "\n< ";
-        Logger.log(resVDelimiter + statusLine);
+        Logger.log(resVDelimiter + statusLine, LogLevel.VERBOSE);
         Logger.log( "< " + String.join(resVDelimiter, headerLines) + resVDelimiter,
                     LogLevel.VERBOSE);
         Logger.log(responseBody);

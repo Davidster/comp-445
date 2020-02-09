@@ -26,6 +26,7 @@ public class PostCommand extends HttpCommand {
     @SneakyThrows
     @Override
     public void run() {
+        preResponse();
 
         // parse url
         URL parsedUrl = new URL(this.getRequestUrl());
