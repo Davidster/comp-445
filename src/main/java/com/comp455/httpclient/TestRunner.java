@@ -4,10 +4,10 @@ import com.comp455.httpclient.client.HttpClient;
 import com.comp455.httpclient.client.HttpResponse;
 import com.comp455.httpclient.logger.LogLevel;
 import com.comp455.httpclient.logger.Logger;
-import javafx.util.Pair;
 import lombok.SneakyThrows;
 
 import java.net.URL;
+import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +23,7 @@ public class TestRunner {
     public static void main(String[] args) {
         Logger.logLevel = LogLevel.ERROR;
 
-        HttpClient httpClient = new HttpClient();
+        HttpClient httpClient = new HttpClient(true);
 
         testGet(httpClient);
         testGetNoBody(httpClient);
@@ -40,7 +40,7 @@ public class TestRunner {
 
         int expectedStatusCode = 200;
         String expectedStatusReason = "OK";
-        Pair<String, String> expectedHeader = new Pair<>("Content-Type", "application/json");
+        Map.Entry<String, String> expectedHeader = new AbstractMap.SimpleEntry<>("Content-Type", "application/json");
         String expectedBody = String.format(
             (
                 "  \"args\": {\n" +
@@ -66,7 +66,7 @@ public class TestRunner {
 
         int expectedStatusCode = 201;
         String expectedStatusReason = "CREATED";
-        Pair<String, String> expectedHeader = new Pair<>("Content-Length", "0");
+        Map.Entry<String, String> expectedHeader = new AbstractMap.SimpleEntry<>("Content-Length", "0");
         String expectedBody = "";
 
         assert httpResponse.getStatus().getCode() == expectedStatusCode;
@@ -75,6 +75,19 @@ public class TestRunner {
         assert httpResponse.getHeaders().get(expectedHeader.getKey())
                 .equals(expectedHeader.getValue());
         assert httpResponse.getBody().equals(expectedBody);
+    }
+
+    @SneakyThrows
+    private static void testRedirectedGet(HttpClient httpClient) {
+        URL url = new URL(HTTPBIN_BASE_URL + "redirect/10");
+
+        HttpResponse httpResponse = httpClient.performGetRequest(emptyHeaderMap, url);
+
+        int expectedStatusCode = 200;
+        String expectedStatusReason = "OK";
+
+        assert httpResponse.getStatus().getCode() == expectedStatusCode;
+        assert httpResponse.getStatus().getReason().equals(expectedStatusReason);
     }
 
     @SneakyThrows
@@ -90,7 +103,7 @@ public class TestRunner {
 
         int expectedStatusCode = 200;
         String expectedStatusReason = "OK";
-        Pair<String, String> expectedHeader = new Pair<>("Content-Type", "application/json");
+        Map.Entry<String, String> expectedHeader = new AbstractMap.SimpleEntry<>("Content-Type", "application/json");
         String expectedBody = String.format(
                 (
                     "  \"json\": {\n" +

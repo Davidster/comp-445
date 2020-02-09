@@ -18,6 +18,12 @@ public class HttpClient {
 
     private static final String LOCATION = "Location";
 
+    private boolean followRedirects;
+
+    public HttpClient(boolean followRedirects) {
+        this.followRedirects = followRedirects;
+    }
+
     public HttpResponse performGetRequest(Map<String, String> headers, URL url) throws IOException {
         HttpResponse response;
         do {
@@ -110,11 +116,12 @@ public class HttpClient {
                     .map(headerArg -> headerArg.split(":", 2))
                     .collect(Collectors.toMap(
                             headerArgSplit -> headerArgSplit[0].trim(),
-                            headerArgSplit -> headerArgSplit[1].trim()));
+                            headerArgSplit -> headerArgSplit[1].trim(),
+                            (val1, val2) -> val1));
 
         String resVDelimiter = "\n< ";
-        Logger.log(reqVDelimiter + statusLine);
-        Logger.log(resVDelimiter + String.join(reqVDelimiter, headerLines) + resVDelimiter,
+        Logger.log(resVDelimiter + statusLine);
+        Logger.log( "< " + String.join(resVDelimiter, headerLines) + resVDelimiter,
                     LogLevel.VERBOSE);
         Logger.log(responseBody);
 
@@ -127,6 +134,9 @@ public class HttpClient {
     }
 
     private URL requiresRedirect(HttpResponse response, URL originalUrl) throws IOException {
+        if(!this.followRedirects) {
+            return null;
+        }
         int statusCode = response.getStatus().getCode();
         Map<String, String> responseHeaders = response.getHeaders();
         if(statusCode >= 300 && statusCode < 400 && responseHeaders.containsKey(LOCATION)) {

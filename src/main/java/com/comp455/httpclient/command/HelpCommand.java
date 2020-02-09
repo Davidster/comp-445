@@ -27,6 +27,8 @@ public class HelpCommand extends Command {
             "Get executes a HTTP GET request for a given URL.",
             "",
             "  -v            Prints the detail of the response such as protocol, status, and headers.",
+            "  -L            Follows 3xx redirects automatically by inspecting the 'Location' header",
+            "  -o file       Writes response body to a file instead of the console",
             "  -h key:value  Associates headers to HTTP Request with the format 'key:value'.");
 
     private static final String POST_HELP = String.join(NEW_LINE,
@@ -37,6 +39,8 @@ public class HelpCommand extends Command {
             "Get executes a HTTP GET request for a given URL.",
             "",
             "  -v            Prints the detail of the response such as protocol, status, and headers.",
+            "  -L            Follows 3xx redirects automatically by inspecting the 'Location' header",
+            "  -o file       Writes response body to a file instead of the console",
             "  -h key:value  Associates headers to HTTP Request with the format 'key:value'.",
             "  -d string     Associates an inline data to the body HTTP POST request.",
             "  -f file       Associates the content of a file to the body HTTP POST request.",

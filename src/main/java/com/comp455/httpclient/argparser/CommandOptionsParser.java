@@ -21,6 +21,10 @@ public class CommandOptionsParser {
                 .build());
         options.addOption(Option.builder("f").hasArg()
                 .build());
+        options.addOption(Option.builder("L")
+                .build());
+        options.addOption(Option.builder("o").hasArg()
+                .build());
     }
 
     @SneakyThrows

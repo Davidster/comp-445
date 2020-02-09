@@ -1,9 +1,12 @@
 package com.comp455.httpclient.argparser;
 
 import com.comp455.httpclient.command.*;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -105,6 +108,10 @@ public class ArgParser {
         CommandLine cmd = commandOptionsParser.parse(commandArgs);
 
         httpCommand.setVerbose(cmd.hasOption("v"));
+
+        httpCommand.setFollowRedirects(cmd.hasOption("L"));
+
+        httpCommand.setOutputFilePath(cmd.getOptionValue("o"));
 
         // parse header values and insert them into a map
         String[] headerArgs = cmd.getOptionValues("h");

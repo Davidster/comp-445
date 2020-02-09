@@ -1,5 +1,7 @@
 package com.comp455.httpclient.command;
 
+import com.comp455.httpclient.logger.Logger;
+
 public class UnknownCommand extends Command {
     private String unknownCommand;
 
@@ -10,6 +12,6 @@ public class UnknownCommand extends Command {
 
     @Override
     public void run() {
-        // TODO
+        Logger.logError(String.format("Unknown command: %s", this.unknownCommand));
     }
 }

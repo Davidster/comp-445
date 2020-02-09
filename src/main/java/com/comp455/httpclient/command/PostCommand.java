@@ -1,6 +1,7 @@
 package com.comp455.httpclient.command;
 
 import com.comp455.httpclient.client.HttpClient;
+import com.comp455.httpclient.client.HttpResponse;
 import com.comp455.httpclient.logger.Logger;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,6 +26,7 @@ public class PostCommand extends HttpCommand {
     @SneakyThrows
     @Override
     public void run() {
+
         // parse url
         URL parsedUrl = new URL(this.getRequestUrl());
 
@@ -37,6 +39,9 @@ public class PostCommand extends HttpCommand {
             entityBody = FileUtils.readFileToString(new File(dataFilePath), StandardCharsets.UTF_8);
         }
 
-        new HttpClient().performPostRequest(this.getHeaders(), parsedUrl, entityBody);
+        HttpResponse httpResponse = new HttpClient(this.isFollowRedirects())
+                .performPostRequest(this.getHeaders(), parsedUrl, entityBody);
+
+        postResponse(httpResponse);
     }
 }
