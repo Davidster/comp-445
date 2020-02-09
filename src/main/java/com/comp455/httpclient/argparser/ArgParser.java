@@ -8,6 +8,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ArgParser {
+
+    private static char QUOTE = '\'';
+
     private String[] args;
 
     public ArgParser(String[] args) {
@@ -36,7 +39,8 @@ public class ArgParser {
                 parsedCommand = buildPostCommand(commandArgs);
                 break;
             default:
-                parsedCommand = buildUnknownCommand(argList.get(0));
+                parsedCommand = new UnknownCommand(
+                        parseStringValue(argList.get(0)));
                 break;
         }
 
@@ -51,7 +55,8 @@ public class ArgParser {
         }
 
         CommandType commandToDescribe = CommandType.UNKNOWN;
-        switch(commandArgs.get(0)) {
+        String subCommand = parseStringValue(commandArgs.get(0));
+        switch(subCommand) {
             case "get":
                 commandToDescribe = CommandType.HTTP_GET;
                 break;
@@ -74,15 +79,13 @@ public class ArgParser {
         Optional<CommandLine> optCmd = parseCommonHttpOptions(postCommand, commandArgs);
 
         optCmd.ifPresent(cmd -> {
-            postCommand.setInlineData(cmd.getOptionValue("d"));
-            postCommand.setDataFile(cmd.getOptionValue("f"));
+            postCommand.setInlineData(
+                    parseStringValue(cmd.getOptionValue("d")));
+            postCommand.setDataFilePath(
+                    parseStringValue(cmd.getOptionValue("f")));
         });
 
         return postCommand;
-    }
-
-    private UnknownCommand buildUnknownCommand(String command) {
-        return new UnknownCommand(command);
     }
 
     private Optional<CommandLine> parseCommonHttpOptions(HttpCommand httpCommand, List<String> commandArgs) {
@@ -90,7 +93,8 @@ public class ArgParser {
             return Optional.empty();
         }
 
-        String requestUrl = commandArgs.remove(commandArgs.size() - 1);
+        String requestUrl = parseStringValue(
+                commandArgs.remove(commandArgs.size() - 1));
         httpCommand.setRequestUrl(requestUrl);
 
         if(commandArgs.size() < 1) {
@@ -107,12 +111,25 @@ public class ArgParser {
         if(headerArgs != null && headerArgs.length > 0) {
             httpCommand.setHeaders(
                     Stream.of(headerArgs)
-                            .map(headerArg -> headerArg.split(":"))
+                            .map(this::parseStringValue)
+                            .map(headerArg -> headerArg.split(":", 2))
                             .collect(Collectors.toMap(
                                     headerArgSplit -> headerArgSplit[0].trim(),
                                     headerArgSplit -> headerArgSplit[1].trim())));
         }
 
         return Optional.of(cmd);
+    }
+
+    private String parseStringValue(String rawString) {
+        if(rawString == null) {
+            return null;
+        }
+        String result = rawString;
+        if(result.charAt(0) == QUOTE &&
+           result.charAt(rawString.length() - 1) == QUOTE) {
+            result = result.substring(1, result.length() - 1);
+        }
+        return result.trim();
     }
 }

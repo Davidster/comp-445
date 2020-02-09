@@ -7,7 +7,8 @@ public class Logger {
 
     private static List<LogLevel> logLevelOrdering = List.of(
             LogLevel.VERBOSE,
-            LogLevel.INFO);
+            LogLevel.INFO,
+            LogLevel.ERROR);
 
     public static void log(String msg) {
         log(msg, LogLevel.INFO);

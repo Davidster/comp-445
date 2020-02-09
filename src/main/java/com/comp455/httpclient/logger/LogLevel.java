@@ -1,5 +1,5 @@
 package com.comp455.httpclient.logger;
 
 public enum LogLevel {
-    INFO, VERBOSE
+    INFO, VERBOSE, ERROR
 }

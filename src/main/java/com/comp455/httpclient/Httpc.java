@@ -8,7 +8,7 @@ import com.comp455.httpclient.command.HttpCommand;
 import com.comp455.httpclient.logger.LogLevel;
 import com.comp455.httpclient.logger.Logger;
 
-public class Main {
+public class Httpc {
     public static void main(String[] args) {
         // parse cli args
         Command command = new ArgParser(args).parse()
