@@ -27,6 +27,7 @@ public class TestRunner {
 
         testGet(httpClient);
         testGetNoBody(httpClient);
+        testRedirectedGet(httpClient);
         testPost(httpClient);
     }
 
@@ -79,7 +80,7 @@ public class TestRunner {
 
     @SneakyThrows
     private static void testRedirectedGet(HttpClient httpClient) {
-        URL url = new URL(HTTPBIN_BASE_URL + "redirect/10");
+        URL url = new URL(HTTPBIN_BASE_URL + "/redirect/10");
 
         HttpResponse httpResponse = httpClient.performGetRequest(emptyHeaderMap, url);
 
