@@ -1,4 +1,4 @@
-package com.comp445.httpc.logger;
+package com.comp445.common.logger;
 
 import java.util.List;
 

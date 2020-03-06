@@ -5,5 +5,31 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.comp445</groupId>
     <artifactId>comp445-parent-project</artifactId>
-    <version>0.0.1</version>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <revision>0.0.1</revision>
+        <java.version>11</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+    </properties>
+
+    <modules>
+        <module>common</module>
+        <module>httpc</module>
+        <module>httpfs</module>
+    </modules>
+
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.10</version>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

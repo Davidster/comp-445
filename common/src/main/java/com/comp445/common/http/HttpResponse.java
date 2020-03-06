@@ -1,4 +1,4 @@
-package com.comp445.httpc.client;
+package com.comp445.common.http;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

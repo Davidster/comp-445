@@ -1,12 +1,12 @@
 package com.comp445.httpc;
 
+import com.comp445.common.logger.LogLevel;
+import com.comp445.common.logger.Logger;
 import com.comp445.httpc.argparser.ArgParser;
 import com.comp445.httpc.command.Command;
 import com.comp445.httpc.command.CommandType;
 import com.comp445.httpc.command.HelpCommand;
 import com.comp445.httpc.command.HttpCommand;
-import com.comp445.httpc.logger.LogLevel;
-import com.comp445.httpc.logger.Logger;
 
 public class Httpc {
     public static void main(String[] args) {

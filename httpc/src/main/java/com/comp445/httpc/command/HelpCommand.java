@@ -1,6 +1,6 @@
 package com.comp445.httpc.command;
 
-import com.comp445.httpc.logger.Logger;
+import com.comp445.common.logger.Logger;
 import lombok.Getter;
 import lombok.Setter;
 

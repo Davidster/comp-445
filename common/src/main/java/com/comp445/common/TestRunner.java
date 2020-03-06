@@ -1,9 +1,9 @@
-package com.comp445.httpc;
+package com.comp445.common;
 
-import com.comp445.httpc.client.HttpClient;
-import com.comp445.httpc.client.HttpResponse;
-import com.comp445.httpc.logger.LogLevel;
-import com.comp445.httpc.logger.Logger;
+import com.comp445.common.http.HttpClient;
+import com.comp445.common.http.HttpResponse;
+import com.comp445.common.logger.LogLevel;
+import com.comp445.common.logger.Logger;
 import lombok.SneakyThrows;
 
 import java.net.URL;

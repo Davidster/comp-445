@@ -1,7 +1,7 @@
-package com.comp445.httpc.client;
+package com.comp445.common.http;
 
-import com.comp445.httpc.logger.LogLevel;
-import com.comp445.httpc.logger.Logger;
+import com.comp445.common.logger.LogLevel;
+import com.comp445.common.logger.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;

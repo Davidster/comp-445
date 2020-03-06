@@ -1,7 +1,7 @@
 package com.comp445.httpc.command;
 
-import com.comp445.httpc.client.HttpClient;
-import com.comp445.httpc.client.HttpResponse;
+import com.comp445.common.http.HttpClient;
+import com.comp445.common.http.HttpResponse;
 import lombok.SneakyThrows;
 
 import java.net.URL;
