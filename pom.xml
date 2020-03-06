@@ -21,7 +21,6 @@
         <module>httpfs</module>
     </modules>
 
-
     <dependencyManagement>
         <dependencies>
             <dependency>
