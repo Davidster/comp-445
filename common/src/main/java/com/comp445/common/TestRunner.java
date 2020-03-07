@@ -18,7 +18,7 @@ public class TestRunner {
 
     @SneakyThrows
     public static void main(String[] args) {
-        Logger.logLevel = LogLevel.ERROR;
+        Logger.logLevel = LogLevel.VERBOSE;
 
         HttpClient httpClient = new HttpClient(true);
 
@@ -55,7 +55,7 @@ public class TestRunner {
         assert httpResponse.getHeaders().containsKey(expectedHeader.getKey());
         assert httpResponse.getHeaders().get(expectedHeader.getKey())
                 .equals(expectedHeader.getValue());
-        assert httpResponse.getBody().contains(expectedBody);
+        assert new String(httpResponse.getBody()).contains(expectedBody);
     }
 
     @SneakyThrows
@@ -69,14 +69,13 @@ public class TestRunner {
         int expectedStatusCode = 201;
         String expectedStatusReason = "CREATED";
         Map.Entry<String, String> expectedHeader = new AbstractMap.SimpleEntry<>("Content-Length", "0");
-        String expectedBody = "";
 
         assert httpResponse.getStatus().getCode() == expectedStatusCode;
         assert httpResponse.getStatus().getReason().equals(expectedStatusReason);
         assert httpResponse.getHeaders().containsKey(expectedHeader.getKey());
         assert httpResponse.getHeaders().get(expectedHeader.getKey())
                 .equals(expectedHeader.getValue());
-        assert httpResponse.getBody().equals(expectedBody);
+        assert httpResponse.getBody().length == 0;
     }
 
     @SneakyThrows
@@ -99,7 +98,7 @@ public class TestRunner {
         String key = "mynameis";
         String value = "david";
         URL url = new URL(HTTPBIN_BASE_URL + "/post");
-        String body = String.format("{ \"%s\": \"%s\" }", key, value);
+        byte[] body = String.format("{ \"%s\": \"%s\" }", key, value).getBytes();
         HttpHeaders headers = new HttpHeaders();
         headers.put("Content-Type", "application/json");
 
@@ -124,6 +123,6 @@ public class TestRunner {
         assert httpResponse.getHeaders().containsKey(expectedHeader.getKey());
         assert httpResponse.getHeaders().get(expectedHeader.getKey())
                 .equals(expectedHeader.getValue());
-        assert httpResponse.getBody().contains(expectedBody);
+        assert new String(httpResponse.getBody()).contains(expectedBody);
     }
 }

@@ -37,7 +37,7 @@ public abstract class HttpCommand extends Command {
 
     protected void postResponse(HttpResponse response) throws IOException {
         if(this.outputFilePath != null) {
-            Files.writeString(Paths.get(this.outputFilePath), response.getBody(), StandardOpenOption.TRUNCATE_EXISTING);
+            Files.write(Paths.get(this.outputFilePath), response.getBody(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         }
     }
 }

@@ -7,7 +7,6 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -29,13 +28,13 @@ public class PostCommand extends HttpCommand {
 
         URL parsedUrl = new URL(this.getRequestUrl());
 
-        String entityBody = "";
+        byte[] entityBody = new byte[0];
         if(inlineData != null && dataFilePath != null) {
             Logger.logError("Warning: both -f and -d options supplied. Ignoring -f option.");
         } else if(inlineData != null) {
-            entityBody = inlineData;
+            entityBody = inlineData.getBytes();
         } else if(dataFilePath != null) {
-            entityBody = Files.readString(Paths.get(dataFilePath));
+            entityBody = Files.readAllBytes(Paths.get(dataFilePath));
         }
 
         HttpRequest request = new HttpRequest(

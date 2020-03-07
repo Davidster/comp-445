@@ -4,7 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,12 +23,14 @@ public class HttpResponse {
     HttpStatus status;
     @NonNull
     HttpHeaders headers;
-    String body;
+    byte[] body;
 
+    public static HttpResponse fromInputStream(InputStream input) throws IOException {
 
-    public static HttpResponse fromLines(List<String> lines) {
+        BufferedInputStream bytesReader = new BufferedInputStream(input);
+
         // parse status
-        String statusLine = lines.get(0).trim();
+        String statusLine =  Util.readLine(bytesReader).trim();
         String[] statusLineSplit = statusLine.split(" ");
         String httpVersion = statusLineSplit[0];
         int statusCode = statusLineSplit.length > 1 ?
@@ -34,27 +40,16 @@ public class HttpResponse {
                 statusLine.substring(statusLine.indexOf(statusLineSplit[1]) + 4)
                 : null;
 
-        // parse headers/body
-        int bodySeparatorIndex = lines.stream()
-                .map(Util::isEmptyLine)
-                .collect(Collectors.toList())
-                .indexOf(true);
-        if(bodySeparatorIndex == -1) {
-            bodySeparatorIndex = lines.size() - 1;
-        }
-        String body = (bodySeparatorIndex < lines.size() - 1) ?
-                String.join("\n",
-                        lines.subList(bodySeparatorIndex + 1, lines.size()))
-                : "";
+        HttpHeaders headers = HttpHeaders.fromInputStream(bytesReader);
 
-        HttpHeaders headers = HttpHeaders.fromLines(lines.subList(1, bodySeparatorIndex));
+        byte[] body = bytesReader.readAllBytes();
 
         return new HttpResponse(new HttpStatus(httpVersion, statusCode, statusReason), headers, body);
     }
 
     public List<String> toHeadersList() {
         headers.put("Content-Length", String.valueOf(
-                body != null ? body.length() : 0
+                body != null ? body.length : 0
         ));
         return Stream.concat(
                     Collections.singletonList(status.toString()).stream(),
@@ -62,11 +57,13 @@ public class HttpResponse {
                 ).collect(Collectors.toList());
     }
 
-    public String toString() {
-        String responseString = String.join("\n", toHeadersList()) + "\n\r\n";
+    public byte[] toByteArray() {
+        String headersString = String.join("\n", this.toHeadersList()) + "\n\r\n";
+
         if(body != null) {
-            return responseString + "\r\n" + body;
+            headersString = headersString + "\r\n";
+            return ArrayUtils.addAll(headersString.getBytes(), body);
         }
-        return responseString;
+        return headersString.getBytes();
     }
 }

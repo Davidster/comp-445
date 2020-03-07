@@ -3,14 +3,12 @@ package com.comp445.common.http;
 import com.comp445.common.logger.LogLevel;
 import com.comp445.common.logger.Logger;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.*;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class HttpClient {
 
@@ -62,8 +60,9 @@ public class HttpClient {
         int timeout = 3000;
         Socket clientSocket = new Socket();
         clientSocket.connect(new InetSocketAddress(address, port), timeout);
-        PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-        BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+        InputStream clientInputStream = clientSocket.getInputStream();
+        OutputStream clientOutputStream = clientSocket.getOutputStream();
 
         Logger.log(String.format("\nConnected to host %s (%s) on port %s",
                 url.getHost(), address.getHostAddress(), port), LogLevel.VERBOSE);
@@ -71,19 +70,23 @@ public class HttpClient {
         Logger.log(reqVDelimiter + String.join(reqVDelimiter, request.toHeadersList()) + reqVDelimiter, LogLevel.VERBOSE);
 
         // send request
-        out.println(request.toString());
+        clientOutputStream.write(request.toByteArray());
+        clientOutputStream.flush();
 
-        HttpResponse response = HttpResponse.fromLines(in.lines().collect(Collectors.toList()));
+        HttpResponse response = HttpResponse.fromInputStream(clientInputStream);
 
         String resVDelimiter = "\n< ";
         Logger.log(resVDelimiter + response.getStatus().toString(), LogLevel.VERBOSE);
         Logger.log( "< " + String.join(resVDelimiter, response.getHeaders().toStringList()) + resVDelimiter,
                     LogLevel.VERBOSE);
-        Logger.log(response.getBody());
+        if(response.getBody() != null) {
+            Logger.log(new String(response.getBody()));
+        }
 
         // clean up
-        in.close();
-        out.close();
+        clientInputStream.close();
+        clientOutputStream.close();
+
         clientSocket.close();
 
         return response;

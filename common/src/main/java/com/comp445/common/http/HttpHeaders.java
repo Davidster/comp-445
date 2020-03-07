@@ -1,5 +1,8 @@
 package com.comp445.common.http;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +31,18 @@ public class HttpHeaders extends HashMap<String, String> {
                             headerArgSplit -> headerArgSplit[1].trim(),
                             (val1, val2) -> val1))
         );
+    }
+
+    public static HttpHeaders fromInputStream(BufferedInputStream input) throws IOException {
+        List<String> headerLines = new ArrayList<>();
+        do {
+            String headerLine = Util.readLine(input).trim();
+            if(Util.isEmptyLine(headerLine)) {
+                break;
+            }
+            headerLines.add(headerLine);
+        } while(headerLines.size() < Util.MAX_HEADER_COUNT);
+        return fromLines(headerLines);
     }
 
     public String toString() {
