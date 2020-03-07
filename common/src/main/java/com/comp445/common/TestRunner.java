@@ -1,14 +1,12 @@
 package com.comp445.common;
 
-import com.comp445.common.http.HttpClient;
-import com.comp445.common.http.HttpResponse;
+import com.comp445.common.http.*;
 import com.comp445.common.logger.LogLevel;
 import com.comp445.common.logger.Logger;
 import lombok.SneakyThrows;
 
 import java.net.URL;
 import java.util.AbstractMap;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,8 +14,7 @@ public class TestRunner {
 
     private static final String HTTPBIN_BASE_URL = "http://httpbin.org";
 
-    private static final Map<String, String> emptyHeaderMap =
-            Collections.unmodifiableMap(new HashMap<>());
+    private static final HttpHeaders emptyHeaders = HttpHeaders.fromMap(new HashMap<>());
 
     @SneakyThrows
     public static void main(String[] args) {
@@ -37,7 +34,9 @@ public class TestRunner {
         String value = "world";
         URL url = new URL(HTTPBIN_BASE_URL + String.format("/get?%s=%s", key, value));
 
-        HttpResponse httpResponse = httpClient.performGetRequest(emptyHeaderMap, url);
+        HttpRequest request = new HttpRequest(HttpMethod.GET, url, emptyHeaders);
+
+        HttpResponse httpResponse = httpClient.performRequest(request);
 
         int expectedStatusCode = 200;
         String expectedStatusReason = "OK";
@@ -63,7 +62,9 @@ public class TestRunner {
     private static void testGetNoBody(HttpClient httpClient) {
         URL url = new URL(HTTPBIN_BASE_URL + "/status/201");
 
-        HttpResponse httpResponse = httpClient.performGetRequest(emptyHeaderMap, url);
+        HttpRequest request = new HttpRequest(HttpMethod.GET, url, emptyHeaders);
+
+        HttpResponse httpResponse = httpClient.performRequest(request);
 
         int expectedStatusCode = 201;
         String expectedStatusReason = "CREATED";
@@ -82,7 +83,9 @@ public class TestRunner {
     private static void testRedirectedGet(HttpClient httpClient) {
         URL url = new URL(HTTPBIN_BASE_URL + "/redirect/10");
 
-        HttpResponse httpResponse = httpClient.performGetRequest(emptyHeaderMap, url);
+        HttpRequest request = new HttpRequest(HttpMethod.GET, url, emptyHeaders);
+
+        HttpResponse httpResponse = httpClient.performRequest(request);
 
         int expectedStatusCode = 200;
         String expectedStatusReason = "OK";
@@ -97,10 +100,12 @@ public class TestRunner {
         String value = "david";
         URL url = new URL(HTTPBIN_BASE_URL + "/post");
         String body = String.format("{ \"%s\": \"%s\" }", key, value);
-        Map<String, String> headers = new HashMap<>();
+        HttpHeaders headers = new HttpHeaders();
         headers.put("Content-Type", "application/json");
 
-        HttpResponse httpResponse = httpClient.performPostRequest(headers, url, body);
+        HttpRequest request = new HttpRequest(HttpMethod.POST, url, headers, body);
+
+        HttpResponse httpResponse = httpClient.performRequest(request);
 
         int expectedStatusCode = 200;
         String expectedStatusReason = "OK";

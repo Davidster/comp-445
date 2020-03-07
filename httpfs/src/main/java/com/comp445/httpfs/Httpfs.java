@@ -1,9 +1,9 @@
 package com.comp445.httpfs;
 
-import com.comp445.common.logger.Logger;
+import com.comp445.common.http.HttpServer;
 
 public class Httpfs {
     public static void main(String[] args) throws Exception {
-        Logger.log("yoperzzz");
+        new HttpServer().startServer(8080, null);
     }
 }

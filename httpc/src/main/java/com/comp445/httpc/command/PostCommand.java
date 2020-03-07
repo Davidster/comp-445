@@ -1,7 +1,6 @@
 package com.comp445.httpc.command;
 
-import com.comp445.common.http.HttpClient;
-import com.comp445.common.http.HttpResponse;
+import com.comp445.common.http.*;
 import com.comp445.common.logger.Logger;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +27,6 @@ public class PostCommand extends HttpCommand {
     public void run() {
         preResponse();
 
-        // parse url
         URL parsedUrl = new URL(this.getRequestUrl());
 
         String entityBody = "";
@@ -40,8 +38,14 @@ public class PostCommand extends HttpCommand {
             entityBody = Files.readString(Paths.get(dataFilePath), StandardCharsets.UTF_8);
         }
 
+        HttpRequest request = new HttpRequest(
+                HttpMethod.GET,
+                parsedUrl,
+                HttpHeaders.fromLines(this.getHeaders()),
+                entityBody);
+
         HttpResponse httpResponse = new HttpClient(this.isFollowRedirects())
-                .performPostRequest(this.getHeaders(), parsedUrl, entityBody);
+                .performRequest(request);
 
         postResponse(httpResponse);
     }

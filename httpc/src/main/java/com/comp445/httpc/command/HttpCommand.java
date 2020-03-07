@@ -10,13 +10,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
 public abstract class HttpCommand extends Command {
-    private Map<String, String> headers;
+    private List<String> headers;
     private boolean verbose;
     private boolean followRedirects;
     private String requestUrl;
@@ -24,7 +24,7 @@ public abstract class HttpCommand extends Command {
 
     public HttpCommand(CommandType commandType) {
         super(commandType);
-        this.headers = new HashMap<>();
+        this.headers = new ArrayList<>();
         this.verbose = false;
         this.followRedirects = false;
     }

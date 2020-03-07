@@ -1,7 +1,6 @@
 package com.comp445.httpc.command;
 
-import com.comp445.common.http.HttpClient;
-import com.comp445.common.http.HttpResponse;
+import com.comp445.common.http.*;
 import lombok.SneakyThrows;
 
 import java.net.URL;
@@ -17,11 +16,15 @@ public class GetCommand extends HttpCommand {
     public void run() {
         preResponse();
 
-        // parse url
         URL parsedUrl = new URL(this.getRequestUrl());
 
+        HttpRequest request = new HttpRequest(
+                HttpMethod.GET,
+                parsedUrl,
+                HttpHeaders.fromLines(this.getHeaders()));
+
         HttpResponse httpResponse = new HttpClient(this.isFollowRedirects())
-                .performGetRequest(this.getHeaders(), parsedUrl);
+                .performRequest(request);
 
         postResponse(httpResponse);
     }

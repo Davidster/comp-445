@@ -115,14 +115,13 @@ public class ArgParser {
 
         // parse header values and insert them into a map
         String[] headerArgs = cmd.getOptionValues("h");
+
         if(headerArgs != null && headerArgs.length > 0) {
             httpCommand.setHeaders(
                     Stream.of(headerArgs)
                             .map(this::parseStringValue)
-                            .map(headerArg -> headerArg.split(":", 2))
-                            .collect(Collectors.toMap(
-                                    headerArgSplit -> headerArgSplit[0].trim(),
-                                    headerArgSplit -> headerArgSplit[1].trim())));
+                            .collect(Collectors.toList())
+            );
         }
 
         return Optional.of(cmd);

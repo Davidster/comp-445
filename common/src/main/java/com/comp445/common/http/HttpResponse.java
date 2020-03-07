@@ -3,12 +3,43 @@ package com.comp445.common.http;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.Map;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Getter
 public class HttpResponse {
     HttpStatus status;
-    Map<String, String> headers;
+    HttpHeaders headers;
     String body;
+
+    public static HttpResponse fromLines(List<String> lines) {
+        // parse status
+        String statusLine = lines.get(0).trim();
+        String[] statusLineSplit = statusLine.split(" ");
+        String httpVersion = statusLineSplit[0];
+        int statusCode = statusLineSplit.length > 1 ?
+                Integer.parseInt(statusLineSplit[1])
+                : -1;
+        String statusReason = statusLineSplit.length > 2 ?
+                statusLine.substring(statusLine.indexOf(statusLineSplit[1]) + 4)
+                : null;
+
+        // parse headers/body
+        int bodySeparatorIndex = lines.stream()
+                .map(Util::isEmptyLine)
+                .collect(Collectors.toList())
+                .indexOf(true);
+        if(bodySeparatorIndex == -1) {
+            bodySeparatorIndex = lines.size() - 1;
+        }
+        String body = (bodySeparatorIndex < lines.size() - 1) ?
+                String.join("\n",
+                        lines.subList(bodySeparatorIndex + 1, lines.size()))
+                : "";
+
+        HttpHeaders headers = HttpHeaders.fromLines(lines.subList(1, bodySeparatorIndex));
+
+        return new HttpResponse(new HttpStatus(httpVersion, statusCode, statusReason), headers, body);
+    }
 }
