@@ -14,8 +14,6 @@ import java.util.stream.Collectors;
 
 public class HttpClient {
 
-    private static final String LOCATION = "Location";
-
     private static final int MAX_REDIRECTS = 50;
 
     private boolean followRedirects;
@@ -70,7 +68,7 @@ public class HttpClient {
         Logger.log(String.format("\nConnected to host %s (%s) on port %s",
                 url.getHost(), address.getHostAddress(), port), LogLevel.VERBOSE);
         String reqVDelimiter = "\n> ";
-        Logger.log(reqVDelimiter + String.join(reqVDelimiter, request.toStringList()) + reqVDelimiter, LogLevel.VERBOSE);
+        Logger.log(reqVDelimiter + String.join(reqVDelimiter, request.toHeadersList()) + reqVDelimiter, LogLevel.VERBOSE);
 
         // send request
         out.println(request.toString());
@@ -94,8 +92,8 @@ public class HttpClient {
     private Optional<String> getRedirectLocation(HttpResponse response) {
         int statusCode = response.getStatus().getCode();
         Map<String, String> responseHeaders = response.getHeaders();
-        if(statusCode >= 300 && statusCode < 400 && responseHeaders.containsKey(LOCATION)) {
-            return Optional.of(responseHeaders.get(LOCATION));
+        if(statusCode >= 300 && statusCode < 400 && responseHeaders.containsKey(HttpHeaders.LOCATION)) {
+            return Optional.of(responseHeaders.get(HttpHeaders.LOCATION));
         }
         return Optional.empty();
     }

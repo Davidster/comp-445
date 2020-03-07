@@ -35,11 +35,11 @@ public class PostCommand extends HttpCommand {
         } else if(inlineData != null) {
             entityBody = inlineData;
         } else if(dataFilePath != null) {
-            entityBody = Files.readString(Paths.get(dataFilePath), StandardCharsets.UTF_8);
+            entityBody = Files.readString(Paths.get(dataFilePath));
         }
 
         HttpRequest request = new HttpRequest(
-                HttpMethod.GET,
+                HttpMethod.POST,
                 parsedUrl,
                 HttpHeaders.fromLines(this.getHeaders()),
                 entityBody);

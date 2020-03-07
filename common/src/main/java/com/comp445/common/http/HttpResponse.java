@@ -2,16 +2,25 @@ package com.comp445.common.http;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+@RequiredArgsConstructor
 @AllArgsConstructor
 @Getter
 public class HttpResponse {
+
+    @NonNull
     HttpStatus status;
+    @NonNull
     HttpHeaders headers;
     String body;
+
 
     public static HttpResponse fromLines(List<String> lines) {
         // parse status
@@ -41,5 +50,23 @@ public class HttpResponse {
         HttpHeaders headers = HttpHeaders.fromLines(lines.subList(1, bodySeparatorIndex));
 
         return new HttpResponse(new HttpStatus(httpVersion, statusCode, statusReason), headers, body);
+    }
+
+    public List<String> toHeadersList() {
+        headers.put("Content-Length", String.valueOf(
+                body != null ? body.length() : 0
+        ));
+        return Stream.concat(
+                    Collections.singletonList(status.toString()).stream(),
+                    headers.toStringList().stream()
+                ).collect(Collectors.toList());
+    }
+
+    public String toString() {
+        String responseString = String.join("\n", toHeadersList()) + "\n\r\n";
+        if(body != null) {
+            return responseString + "\r\n" + body;
+        }
+        return responseString;
     }
 }

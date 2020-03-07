@@ -7,6 +7,11 @@ import java.util.stream.Collectors;
 
 public class HttpHeaders extends HashMap<String, String> {
 
+    public static final String LOCATION = "Location";
+    public static final String HOST = "Host";
+    public static final String CONTENT_TYPE = "Content-Type";
+    public static final String CONTENT_LENGTH = "Content-Length";
+
     public static HttpHeaders fromMap(Map<String, String> map) {
         HttpHeaders newMap = new HttpHeaders();
         newMap.putAll(map);
