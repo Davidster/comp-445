@@ -7,9 +7,10 @@ import com.comp445.httpc.command.Command;
 import com.comp445.httpc.command.CommandType;
 import com.comp445.httpc.command.HelpCommand;
 import com.comp445.httpc.command.HttpCommand;
+import org.apache.commons.cli.ParseException;
 
 public class Httpc {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ParseException {
         // parse cli args
         Command command = new ArgParser(args).parse()
                 .orElse(new HelpCommand());

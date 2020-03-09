@@ -32,9 +32,9 @@ public class HttpStatus {
         STATUS_REASON_MAP = Collections.unmodifiableMap(srm);
     }
 
-    String httpVersion;
-    int code;
-    String reason;
+    private String httpVersion;
+    private int code;
+    private String reason;
 
     public HttpStatus(int code) {
         this.httpVersion = VERSION_1_0;

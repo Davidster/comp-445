@@ -4,11 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,17 +19,20 @@ import java.util.stream.Stream;
 public class HttpResponse {
 
     @NonNull
-    HttpStatus status;
+    private HttpStatus status;
     @NonNull
-    HttpHeaders headers;
-    byte[] body;
+    private HttpHeaders headers;
+    private byte[] body;
 
-    public static HttpResponse fromInputStream(InputStream input) throws IOException {
+    public HttpResponse(HttpStatus status, HttpHeaders headers, String body) {
+        this.status = status;
+        this.headers = headers;
+        this.body = body.getBytes();
+    }
 
-        BufferedInputStream bytesReader = new BufferedInputStream(input);
-
+    public static HttpResponse fromInputStream(BufferedInputStream input) throws IOException {
         // parse status
-        String statusLine =  Util.readLine(bytesReader).trim();
+        String statusLine =  Util.readLine(input).trim();
         String[] statusLineSplit = statusLine.split(" ");
         String httpVersion = statusLineSplit[0];
         int statusCode = statusLineSplit.length > 1 ?
@@ -40,9 +42,9 @@ public class HttpResponse {
                 statusLine.substring(statusLine.indexOf(statusLineSplit[1]) + 4)
                 : null;
 
-        HttpHeaders headers = HttpHeaders.fromInputStream(bytesReader);
+        HttpHeaders headers = HttpHeaders.fromInputStream(input);
 
-        byte[] body = bytesReader.readAllBytes();
+        byte[] body = input.readAllBytes();
 
         return new HttpResponse(new HttpStatus(httpVersion, statusCode, statusReason), headers, body);
     }
@@ -57,12 +59,14 @@ public class HttpResponse {
                 ).collect(Collectors.toList());
     }
 
-    public byte[] toByteArray() {
+    public byte[] toByteArray() throws IOException {
         String headersString = String.join("\n", this.toHeadersList()) + "\n\r\n";
 
         if(body != null) {
-            headersString = headersString + "\r\n";
-            return ArrayUtils.addAll(headersString.getBytes(), body);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            outputStream.write(headersString.getBytes());
+            outputStream.write(body);
+            return outputStream.toByteArray();
         }
         return headersString.getBytes();
     }

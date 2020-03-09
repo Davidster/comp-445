@@ -3,8 +3,8 @@ package com.comp445.common.http;
 import com.comp445.common.logger.LogLevel;
 import com.comp445.common.logger.Logger;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.*;
 import java.util.Map;
@@ -37,7 +37,7 @@ public class HttpClient {
             }
             String location = locationOpt.get();
             if(location.indexOf("http") != 0) {
-                location = String.format("http://%s%s", request.url.getHost(), location);
+                location = String.format("http://%s%s", request.getUrl().getHost(), location);
             }
             request.setUrl(new URL(location));
             redirects++;
@@ -61,7 +61,7 @@ public class HttpClient {
         Socket clientSocket = new Socket();
         clientSocket.connect(new InetSocketAddress(address, port), timeout);
 
-        InputStream clientInputStream = clientSocket.getInputStream();
+        BufferedInputStream clientInputStream = new BufferedInputStream(clientSocket.getInputStream());
         OutputStream clientOutputStream = clientSocket.getOutputStream();
 
         Logger.log(String.format("\nConnected to host %s (%s) on port %s",

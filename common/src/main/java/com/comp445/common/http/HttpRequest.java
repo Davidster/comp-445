@@ -1,12 +1,13 @@
 package com.comp445.common.http;
 
 import lombok.*;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,31 +19,28 @@ import java.util.stream.Stream;
 public class HttpRequest {
 
     @NonNull
-    HttpMethod method;
+    private HttpMethod method;
     @NonNull
-    URL url;
+    private URL url;
     @NonNull
-    HttpHeaders headers;
-    byte[] body;
+    private HttpHeaders headers;
+    private byte[] body;
 
-    public static HttpRequest fromInputStream(InputStream input) throws IOException {
-
-        BufferedInputStream bytesReader = new BufferedInputStream(input);
-
+    public static HttpRequest fromInputStream(BufferedInputStream input) throws IOException {
         // parse method
-        String methodLine = Util.readLine(bytesReader).trim();
+        String methodLine = Util.readLine(input).trim();
         String[] methodLineSplit = methodLine.split(" ");
         HttpMethod method = HttpMethod.valueOf(methodLineSplit[0]);
         String path = methodLineSplit.length > 1 ?
-                methodLineSplit[1] : null;
+                URLDecoder.decode(methodLineSplit[1], StandardCharsets.UTF_8) : null;
         String httpVersion = methodLineSplit.length > 2 ?
                 methodLineSplit[2] : null;
 
-        HttpHeaders headers = HttpHeaders.fromInputStream(bytesReader);
+        HttpHeaders headers = HttpHeaders.fromInputStream(input);
 
         int contentLength = Integer.parseInt(headers.getOrDefault(HttpHeaders.CONTENT_LENGTH, "0"));
         byte[] body = contentLength > 0 ?
-                bytesReader.readNBytes(contentLength)
+                input.readNBytes(contentLength)
                 : null;
 
         String host = headers.getOrDefault(HttpHeaders.HOST, "localhost");
@@ -66,12 +64,14 @@ public class HttpRequest {
         ).collect(Collectors.toList());
     }
 
-    @SneakyThrows
-    public byte[] toByteArray() {
+    public byte[] toByteArray() throws IOException {
         String headersString = String.join("\n", this.toHeadersList()) + "\n\r\n";
 
         if(method == HttpMethod.POST) {
-            return ArrayUtils.addAll(headersString.getBytes(), body);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            outputStream.write(headersString.getBytes());
+            outputStream.write(body);
+            return outputStream.toByteArray();
         }
         return headersString.getBytes();
     }
