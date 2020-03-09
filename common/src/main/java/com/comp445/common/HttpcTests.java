@@ -10,7 +10,7 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TestRunner {
+public class HttpcTests {
 
     private static final String HTTPBIN_BASE_URL = "http://httpbin.org";
 

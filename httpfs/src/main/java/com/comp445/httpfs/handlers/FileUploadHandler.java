@@ -17,7 +17,7 @@ public class FileUploadHandler implements Function<FileUploadRequest, HttpRespon
         try {
             Path filePath = request.getDestinationPath();
             if(Files.isDirectory(filePath)) {
-                return handleBadRequest("Destination path is a directory.");
+                return handleBadRequest("Destination path is a directory");
             }
             if(request.content == null) {
                 return handleBadRequest("Body is required");
