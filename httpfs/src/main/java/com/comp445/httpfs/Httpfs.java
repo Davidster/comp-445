@@ -1,6 +1,9 @@
 package com.comp445.httpfs;
 
-import com.comp445.common.http.*;
+import com.comp445.common.http.HttpResponse;
+import com.comp445.common.http.HttpServer;
+import com.comp445.common.http.HttpStatus;
+import com.comp445.common.http.Util;
 import com.comp445.common.logger.LogLevel;
 import com.comp445.common.logger.Logger;
 import com.comp445.httpfs.argparser.ArgParser;
@@ -14,8 +17,6 @@ import org.apache.commons.cli.ParseException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import static com.comp445.common.http.Util.HTML_PAGE_COMMON_HEADERS;
 
 public class Httpfs {
 
@@ -40,8 +41,6 @@ public class Httpfs {
         }
 
         HttpfsOptions httpfsOptions = new ArgParser(args).parse();
-
-
 
         Logger.logLevel = httpfsOptions.isVerbose() ? LogLevel.VERBOSE : LogLevel.INFO;
 
@@ -86,7 +85,7 @@ public class Httpfs {
     private static HttpResponse handleUnauthorized() {
         return new HttpResponse(
                 new HttpStatus(HttpStatus.STATUS_FORBIDDEN),
-                HTML_PAGE_COMMON_HEADERS,
+                Util.getHtmlPageCommonHeaders(),
                 TemplateManager.TEMPLATE_403);
     }
 }

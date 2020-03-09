@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.comp445.common.http.Util.HTML_PAGE_COMMON_HEADERS;
-
 public class FileRetrievalHandler implements Function<Path, HttpResponse> {
 
     @Override
@@ -65,14 +63,14 @@ public class FileRetrievalHandler implements Function<Path, HttpResponse> {
         }
         return new HttpResponse(
                 new HttpStatus(HttpStatus.STATUS_OK),
-                HTML_PAGE_COMMON_HEADERS,
+                Util.getHtmlPageCommonHeaders(),
                 String.format(TemplateManager.TEMPLATE_DIRECTORY_LISTING, pageTitle, pageBody));
     }
 
     private HttpResponse handleNonExistent() {
         return new HttpResponse(
                 new HttpStatus(HttpStatus.STATUS_NOT_FOUND),
-                HTML_PAGE_COMMON_HEADERS,
+                Util.getHtmlPageCommonHeaders(),
                 TemplateManager.TEMPLATE_404);
     }
 }

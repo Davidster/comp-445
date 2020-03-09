@@ -10,8 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Function;
 
-import static com.comp445.common.http.Util.HTML_PAGE_COMMON_HEADERS;
-
 public class FileUploadHandler implements Function<FileUploadRequest, HttpResponse> {
     @Override
     public HttpResponse apply(FileUploadRequest request) {
@@ -38,7 +36,7 @@ public class FileUploadHandler implements Function<FileUploadRequest, HttpRespon
     private HttpResponse handleBadRequest(String reason) {
         return new HttpResponse(
                 new HttpStatus(HttpStatus.STATUS_BAD_REQUEST),
-                HTML_PAGE_COMMON_HEADERS,
+                Util.getHtmlPageCommonHeaders(),
                 String.format(TemplateManager.TEMPLATE_400, reason));
     }
 }
