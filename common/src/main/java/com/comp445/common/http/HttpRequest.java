@@ -54,7 +54,7 @@ public class HttpRequest {
     }
 
     public List<String> toHeadersList() {
-        if(method == HttpMethod.POST) {
+        if(method == HttpMethod.POST && body != null) {
             headers.put("Content-Length", String.valueOf(body.length));
         }
 
@@ -71,7 +71,7 @@ public class HttpRequest {
     public byte[] toByteArray() throws IOException {
         String headersString = String.join("\n", this.toHeadersList()) + "\n\r\n";
 
-        if(method == HttpMethod.POST) {
+        if(method == HttpMethod.POST && body != null) {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             outputStream.write(headersString.getBytes());
             outputStream.write(body);

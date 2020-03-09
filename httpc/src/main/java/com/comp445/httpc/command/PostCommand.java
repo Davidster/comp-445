@@ -28,7 +28,7 @@ public class PostCommand extends HttpCommand {
 
         URL parsedUrl = new URL(this.getRequestUrl());
 
-        byte[] entityBody = new byte[0];
+        byte[] entityBody = null;
         if(inlineData != null && dataFilePath != null) {
             Logger.logError("Warning: both -f and -d options supplied. Ignoring -f option.");
         } else if(inlineData != null) {
