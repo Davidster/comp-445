@@ -12,12 +12,14 @@ import com.comp445.httpfs.handlers.FileRetrievalHandler;
 import com.comp445.httpfs.handlers.FileUploadHandler;
 import com.comp445.httpfs.handlers.FileUploadRequest;
 import com.comp445.httpfs.templates.TemplateManager;
+import lombok.AllArgsConstructor;
 import org.apache.commons.cli.ParseException;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@AllArgsConstructor
 public class Httpfs {
 
     private static final String NEW_LINE = "\n";
@@ -31,20 +33,24 @@ public class Httpfs {
             "  -v  Specifies the directory that the server will use to read/write requested files.",
             "      Default is the current directory when launching the application.");
 
+    private HttpfsOptions options;
+
     public static void main(String[] args) throws ParseException, IOException {
-
-        TemplateManager.init();
-
         if(args.length > 0 && args[0].equals("help")) {
             Logger.log(BASE_HELP);
             return;
         }
 
-        HttpfsOptions httpfsOptions = new ArgParser(args).parse();
+        new Httpfs(new ArgParser(args).parse()).startServer();
+    }
 
-        Logger.logLevel = httpfsOptions.isVerbose() ? LogLevel.VERBOSE : LogLevel.INFO;
+    public void startServer() throws IOException {
 
-        HttpServer server = new HttpServer(httpfsOptions.getPort(), request -> {
+        TemplateManager.init();
+
+        Logger.logLevel = options.isVerbose() ? LogLevel.VERBOSE : LogLevel.INFO;
+
+        HttpServer server = new HttpServer(options.getPort(), request -> {
             Logger.log("Received a request:", LogLevel.VERBOSE);
             Logger.log(String.format("  Method: %s", request.getMethod()), LogLevel.VERBOSE);
             Logger.log(String.format("  Path: %s", request.getUrl().getPath()), LogLevel.VERBOSE);
@@ -60,7 +66,7 @@ public class Httpfs {
             HttpResponse response = Util.handleError(TemplateManager.TEMPLATE_500);
 
             Path requestPath = Paths.get(request.getUrl().getPath().substring(1));
-            Path workingDir = httpfsOptions.getWorkingDirectory();
+            Path workingDir = options.getWorkingDirectory().normalize().toAbsolutePath();
             Path finalPath = workingDir.resolve(requestPath).normalize();
             if(!finalPath.startsWith(workingDir)) {
                 response = handleUnauthorized();
