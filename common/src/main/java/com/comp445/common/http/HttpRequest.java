@@ -38,10 +38,14 @@ public class HttpRequest {
 
         HttpHeaders headers = HttpHeaders.fromInputStream(input);
 
-        int contentLength = Integer.parseInt(headers.getOrDefault(HttpHeaders.CONTENT_LENGTH, "0"));
-        byte[] body = contentLength > 0 ?
-                input.readNBytes(contentLength)
-                : null;
+        byte[] body = null;
+        String contentLengthString = headers.get(HttpHeaders.CONTENT_LENGTH);
+        if(contentLengthString != null) {
+            int contentLength = Integer.parseInt(contentLengthString);
+            body = contentLength > 0 ?
+                    input.readNBytes(contentLength)
+                    : new byte[0];
+        }
 
         String host = headers.getOrDefault(HttpHeaders.HOST, "localhost");
         URL url = new URL(String.format("http://%s%s", host, path));

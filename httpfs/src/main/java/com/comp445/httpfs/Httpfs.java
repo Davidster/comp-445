@@ -1,10 +1,13 @@
 package com.comp445.httpfs;
 
 import com.comp445.common.http.*;
+import com.comp445.common.logger.LogLevel;
 import com.comp445.common.logger.Logger;
 import com.comp445.httpfs.argparser.ArgParser;
 import com.comp445.httpfs.argparser.HttpfsOptions;
 import com.comp445.httpfs.handlers.FileRetrievalHandler;
+import com.comp445.httpfs.handlers.FileUploadHandler;
+import com.comp445.httpfs.handlers.FileUploadRequest;
 import com.comp445.httpfs.templates.TemplateManager;
 import org.apache.commons.cli.ParseException;
 
@@ -31,12 +34,6 @@ public class Httpfs {
 
         TemplateManager.init();
 
-//        FileManager fileManager = new FileManager();
-
-//        String pomContents = new String(fileManager.readFile(Paths.get("pom.xml")));
-//        List<Path> files = fileManager.listFiles(Paths.get(""));
-//        fileManager.writeFile(Paths.get("pomCopy.xml"), pomContents + "heythere");
-
         if(args.length > 0 && args[0].equals("help")) {
             Logger.log(BASE_HELP);
             return;
@@ -44,39 +41,47 @@ public class Httpfs {
 
         HttpfsOptions httpfsOptions = new ArgParser(args).parse();
 
-        HttpServer server = new HttpServer(8081, request -> {
-            Logger.log("Received a request:");
-            Logger.log(String.format("  Method: %s", request.getMethod()));
-            Logger.log(String.format("  Path: %s", request.getUrl().getPath()));
-            Logger.log("  Headers:");
-            Logger.log("    " + String.join("\n    ", request.getHeaders().toStringList()));
+
+
+        Logger.logLevel = httpfsOptions.isVerbose() ? LogLevel.VERBOSE : LogLevel.INFO;
+
+        HttpServer server = new HttpServer(httpfsOptions.getPort(), request -> {
+            Logger.log("Received a request:", LogLevel.VERBOSE);
+            Logger.log(String.format("  Method: %s", request.getMethod()), LogLevel.VERBOSE);
+            Logger.log(String.format("  Path: %s", request.getUrl().getPath()), LogLevel.VERBOSE);
+            Logger.log("  Headers:", LogLevel.VERBOSE);
+            Logger.log("    " + String.join("\n    ", request.getHeaders().toStringList()), LogLevel.VERBOSE);
             if(request.getBody() != null) {
-                Logger.log("  Body:\n*********START BODY*********");
+                Logger.log("  Body:\n*********START BODY*********", LogLevel.VERBOSE);
                 String body = new String(request.getBody());
-                Logger.log(body);
-                Logger.log("*********END BODY***********\n");
+                Logger.log(body, LogLevel.VERBOSE);
+                Logger.log("*********END BODY***********\n", LogLevel.VERBOSE);
             }
 
             HttpResponse response = Util.handleError(TemplateManager.TEMPLATE_500);
-            if(request.getMethod().equals(HttpMethod.GET)) {
-                Path requestPath = Paths.get(request.getUrl().getPath().substring(1));
-                Path workingDir = httpfsOptions.getWorkingDirectory();
-                Path finalPath = workingDir.resolve(requestPath).normalize();
-                if(!finalPath.startsWith(workingDir)) {
-                    response = handleUnauthorized();
-                } else {
-                    response = new FileRetrievalHandler().apply(finalPath);
+
+            Path requestPath = Paths.get(request.getUrl().getPath().substring(1));
+            Path workingDir = httpfsOptions.getWorkingDirectory();
+            Path finalPath = workingDir.resolve(requestPath).normalize();
+            if(!finalPath.startsWith(workingDir)) {
+                response = handleUnauthorized();
+            } else {
+                switch (request.getMethod()) {
+                    case GET:
+                        response = new FileRetrievalHandler().apply(finalPath);
+                        break;
+                    case POST:
+                        response = new FileUploadHandler().apply(new FileUploadRequest(finalPath, request.getBody()));
+                        break;
                 }
             }
+
+            response.getHeaders().putAll(request.getHeaders());
 
             return response;
         });
         server.start();
     }
-
-//    private boolean isIllegalPath() {
-//
-//    }
 
     private static HttpResponse handleUnauthorized() {
         return new HttpResponse(

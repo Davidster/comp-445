@@ -19,7 +19,7 @@ public class FileRetrievalHandler implements Function<Path, HttpResponse> {
 
     @Override
     public HttpResponse apply(Path path) {
-        System.out.println();
+        HttpResponse catchAll = Util.handleError(TemplateManager.TEMPLATE_500);
         try {
             if(!Files.exists(path)) {
                 return handleNonExistent();
@@ -30,13 +30,11 @@ public class FileRetrievalHandler implements Function<Path, HttpResponse> {
             if(Files.isRegularFile(path)) {
                 return handleRegularFile(path);
             }
+            throw new Exception(String.format("File (%s) exists but is neither a file nor directory", path.toString()));
         } catch (Exception e) {
-            return Util.handleError(TemplateManager.TEMPLATE_500);
+            e.printStackTrace();
         }
-        return new HttpResponse(
-                new HttpStatus(HttpStatus.STATUS_INTERNAL_SERVER_ERROR),
-                new HttpHeaders(),
-                TemplateManager.TEMPLATE_500);
+        return catchAll;
     }
 
     private HttpResponse handleRegularFile(Path path) throws IOException {
@@ -71,7 +69,7 @@ public class FileRetrievalHandler implements Function<Path, HttpResponse> {
                 String.format(TemplateManager.TEMPLATE_DIRECTORY_LISTING, pageTitle, pageBody));
     }
 
-    private HttpResponse handleNonExistent() throws IOException {
+    private HttpResponse handleNonExistent() {
         return new HttpResponse(
                 new HttpStatus(HttpStatus.STATUS_NOT_FOUND),
                 HTML_PAGE_COMMON_HEADERS,

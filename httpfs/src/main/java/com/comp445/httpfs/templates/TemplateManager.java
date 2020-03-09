@@ -7,7 +7,6 @@ import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 public class TemplateManager {
-    private static Path templatePath = Paths.get(TemplateManager.class.getProtectionDomain().getCodeSource().getLocation().getPath());
 
     public static String TEMPLATE_400 = "400.html";
     public static String TEMPLATE_403 = "403.html";
@@ -24,7 +23,9 @@ public class TemplateManager {
     }
 
     public static String getTemplate(String template) {
-        return new BufferedReader(new InputStreamReader(TemplateManager.class.getClassLoader().getResourceAsStream(template))).lines().collect(Collectors.joining(""));
+        return new BufferedReader(new InputStreamReader(
+                TemplateManager.class.getClassLoader().getResourceAsStream(template)))
+                    .lines().collect(Collectors.joining(""));
     }
 
 }
