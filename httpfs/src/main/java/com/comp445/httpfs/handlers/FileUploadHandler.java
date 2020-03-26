@@ -1,9 +1,9 @@
 package com.comp445.httpfs.handlers;
 
+import com.comp445.common.Util;
 import com.comp445.common.http.HttpHeaders;
 import com.comp445.common.http.HttpResponse;
 import com.comp445.common.http.HttpStatus;
-import com.comp445.common.http.Util;
 import com.comp445.httpfs.templates.TemplateManager;
 
 import java.nio.file.Files;

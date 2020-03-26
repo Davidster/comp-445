@@ -1,4 +1,4 @@
-package com.comp445.common.selectiverepeat;
+package com.comp445.common.net.selectiverepeat;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

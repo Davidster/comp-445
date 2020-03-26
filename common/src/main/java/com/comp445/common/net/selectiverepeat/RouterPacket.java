@@ -1,4 +1,4 @@
-package com.comp445.common.selectiverepeat;
+package com.comp445.common.net.selectiverepeat;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +9,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+
+import static com.comp445.common.Util.MAX_PACKET_LENGTH;
 
 @AllArgsConstructor
 @Getter
@@ -22,6 +24,7 @@ public class RouterPacket {
     private byte[] payload; // variable length
 
     private static final int MIN_PACKET_SIZE = 1 + 4 + 4 + 2;
+    public static final int MAX_PAYLOAD_SIZE = MAX_PACKET_LENGTH - MIN_PACKET_SIZE;
 
     public RouterPacket() throws UnknownHostException {
         this.type = PacketType.DATA;
@@ -33,7 +36,6 @@ public class RouterPacket {
 
     public static RouterPacket fromByteArray(byte[] bytes) throws UnknownHostException {
         ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-//        System.out.println(byteBuffer.getShort(9));
         return new RouterPacket(
                 PacketType.fromByteValue(byteBuffer.get(0)),
                 byteBuffer.getInt(1),

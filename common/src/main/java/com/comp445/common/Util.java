@@ -1,4 +1,8 @@
-package com.comp445.common.http;
+package com.comp445.common;
+
+import com.comp445.common.http.HttpHeaders;
+import com.comp445.common.http.HttpResponse;
+import com.comp445.common.http.HttpStatus;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -22,6 +26,7 @@ public class Util {
 
     public static final int MAX_PACKET_LENGTH = 1024;
     public static final int ARQ_ROUTER_PORT = 3000;
+    public static final int DEFAULT_TIMEOUT = 3000;
 
     public static boolean isEmptyLine(String s) {
         return emptyLine.matcher(s).matches();

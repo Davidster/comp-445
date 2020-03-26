@@ -1,6 +1,10 @@
 package com.comp445.httpfs;
 
-import com.comp445.common.http.*;
+import com.comp445.common.Util;
+import com.comp445.common.http.HttpResponse;
+import com.comp445.common.http.HttpServer;
+import com.comp445.common.http.HttpStatus;
+import com.comp445.common.http.UDPHttpServer;
 import com.comp445.common.logger.LogLevel;
 import com.comp445.common.logger.Logger;
 import com.comp445.httpfs.argparser.ArgParser;
@@ -13,6 +17,7 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.cli.ParseException;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -32,7 +37,7 @@ public class Httpfs {
 
     private HttpfsOptions options;
 
-    public static void main(String[] args) throws ParseException, IOException {
+    public static void main(String[] args) throws ParseException, IOException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
         if(args.length > 0 && args[0].equals("help")) {
             Logger.log(BASE_HELP);
             return;
@@ -41,7 +46,7 @@ public class Httpfs {
         new Httpfs(new ArgParser(args).parse()).startServer();
     }
 
-    public void startServer() throws IOException {
+    public void startServer() throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
         TemplateManager.init();
 

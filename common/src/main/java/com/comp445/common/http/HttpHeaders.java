@@ -1,5 +1,7 @@
 package com.comp445.common.http;
 
+import com.comp445.common.Util;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.ArrayList;

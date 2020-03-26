@@ -1,5 +1,6 @@
 package com.comp445.common.http;
 
+import com.comp445.common.Util;
 import lombok.*;
 
 import java.io.BufferedInputStream;

@@ -2,32 +2,37 @@ package com.comp445.common.http;
 
 import com.comp445.common.logger.LogLevel;
 import com.comp445.common.logger.Logger;
+import com.comp445.common.net.ISocket;
+import lombok.AllArgsConstructor;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Optional;
 
-public abstract class HttpClient {
+import static com.comp445.common.Util.DEFAULT_TIMEOUT;
+
+@AllArgsConstructor
+public class HttpClient {
 
     private static final int MAX_REDIRECTS = 50;
 
-    protected boolean followRedirects;
+    private Class<? extends ISocket> socketClass;
+    private boolean followRedirects;
 
-    protected abstract HttpResponse performSimpleRequest(HttpRequest request) throws IOException;
-
-    public HttpClient(boolean followRedirects) {
-        this.followRedirects = followRedirects;
-    }
-
-    public HttpResponse performRequest(HttpRequest request) throws IOException {
+    public HttpResponse performRequest(HttpRequest request) throws IOException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
         return this.followRedirects ?
                 performRedirectableRequest(request) :
                 performSimpleRequest(request);
     }
 
-    private HttpResponse performRedirectableRequest(HttpRequest request) throws IOException {
+    private HttpResponse performRedirectableRequest(HttpRequest request) throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         HttpResponse response;
         int redirects = 0;
         do {
@@ -55,11 +60,33 @@ public abstract class HttpClient {
         return Optional.empty();
     }
 
-    protected void logRequestInfo(URL url, InetAddress address, int port, HttpRequest request, HttpResponse response) {
+    private HttpResponse performSimpleRequest(HttpRequest request) throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        URL url = request.getUrl();
+
+        if(url.getProtocol().equals("https")) {
+            throw new MalformedURLException("Protocol: https not supported");
+        }
+
+        // setup connection
+        InetAddress address = InetAddress.getByName(url.getHost());
+        int port = url.getPort() != -1 ? url.getPort() : 80;
+        ISocket clientSocket = socketClass.getConstructor().newInstance();
+        clientSocket.connect(new InetSocketAddress(address, port), DEFAULT_TIMEOUT);
+        BufferedInputStream clientInputStream = new BufferedInputStream(clientSocket.getInputStream());
+        OutputStream clientOutputStream = clientSocket.getOutputStream();
+
         Logger.log(String.format("\nConnected to host %s (%s) on port %s",
                 url.getHost(), address.getHostAddress(), port), LogLevel.VERBOSE);
         String reqVDelimiter = "\n> ";
         Logger.log(reqVDelimiter + String.join(reqVDelimiter, request.toHeadersList()) + reqVDelimiter, LogLevel.VERBOSE);
+
+        // send request
+        clientOutputStream.write(request.toByteArray());
+        clientOutputStream.flush();
+
+        // get response
+        HttpResponse response = HttpResponse.fromInputStream(clientInputStream);
+
         String resVDelimiter = "\n< ";
         Logger.log(resVDelimiter + response.getStatus().toString(), LogLevel.VERBOSE);
         Logger.log( "< " + String.join(resVDelimiter, response.getHeaders().toStringList()) + resVDelimiter,
@@ -67,5 +94,12 @@ public abstract class HttpClient {
         if(response.getBody() != null) {
             Logger.log(new String(response.getBody()));
         }
+
+        // clean up
+        clientInputStream.close();
+        clientOutputStream.close();
+        clientSocket.close();
+
+        return response;
     }
 }

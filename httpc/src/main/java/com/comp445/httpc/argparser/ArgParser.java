@@ -1,6 +1,6 @@
 package com.comp445.httpc.argparser;
 
-import com.comp445.common.http.Util;
+import com.comp445.common.Util;
 import com.comp445.httpc.command.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.ParseException;

@@ -6,6 +6,7 @@ import com.comp445.common.logger.Logger;
 import com.comp445.httpfs.argparser.HttpfsOptions;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,7 +38,7 @@ public class HttpfsTests {
         Thread serverThread = new Thread(() -> {
             try {
                 httpFileServer.startServer();
-            } catch (IOException e) {
+            } catch (IOException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
                 e.printStackTrace();
             }
         });
