@@ -2,21 +2,20 @@ package com.comp445.common.http;
 
 import com.comp445.common.logger.LogLevel;
 import com.comp445.common.logger.Logger;
-import com.comp445.common.selectiverepeat.SelectiveRepeatClient;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.URL;
 import java.util.Map;
 import java.util.Optional;
 
-public class HttpClient {
+public abstract class HttpClient {
 
     private static final int MAX_REDIRECTS = 50;
 
-    private boolean followRedirects;
+    protected boolean followRedirects;
+
+    protected abstract HttpResponse performSimpleRequest(HttpRequest request) throws IOException;
 
     public HttpClient(boolean followRedirects) {
         this.followRedirects = followRedirects;
@@ -25,14 +24,14 @@ public class HttpClient {
     public HttpResponse performRequest(HttpRequest request) throws IOException {
         return this.followRedirects ?
                 performRedirectableRequest(request) :
-                performSimpleRequestARQ(request);
+                performSimpleRequest(request);
     }
 
     private HttpResponse performRedirectableRequest(HttpRequest request) throws IOException {
         HttpResponse response;
         int redirects = 0;
         do {
-            response = performSimpleRequestARQ(request);
+            response = performSimpleRequest(request);
             Optional<String> locationOpt = getRedirectLocation(response);
             if(locationOpt.isEmpty()) {
                 break;
@@ -47,84 +46,6 @@ public class HttpClient {
         return response;
     }
 
-    private HttpResponse performSimpleRequestARQ(HttpRequest request) throws IOException {
-        URL url = request.getUrl();
-
-        // get ip address
-        InetAddress address = InetAddress.getByName(url.getHost());
-        // open/connect socket
-        int port = url.getPort() != -1 ? url.getPort() : 80;
-        int timeout = 3000;
-        SelectiveRepeatClient client = new SelectiveRepeatClient(new InetSocketAddress(address, port), timeout);
-
-        Logger.log(String.format("\nConnected to host %s (%s) on port %s",
-                url.getHost(), address.getHostAddress(), port), LogLevel.VERBOSE);
-        String reqVDelimiter = "\n> ";
-        Logger.log(reqVDelimiter + String.join(reqVDelimiter, request.toHeadersList()) + reqVDelimiter, LogLevel.VERBOSE);
-
-        // send request
-        byte[] responseBytes = client.send(request.toByteArray());
-
-        HttpResponse response = HttpResponse.fromInputStream(new BufferedInputStream(new ByteArrayInputStream(responseBytes)));
-
-        String resVDelimiter = "\n< ";
-        Logger.log(resVDelimiter + response.getStatus().toString(), LogLevel.VERBOSE);
-        Logger.log( "< " + String.join(resVDelimiter, response.getHeaders().toStringList()) + resVDelimiter,
-                    LogLevel.VERBOSE);
-        if(response.getBody() != null) {
-            Logger.log(new String(response.getBody()));
-        }
-
-        return response;
-    }
-
-    private HttpResponse performSimpleRequest(HttpRequest request) throws IOException {
-        URL url = request.getUrl();
-
-        if(url.getProtocol().equals("https")) {
-            throw new MalformedURLException("Protocol: https not supported");
-        }
-
-        // get ip address
-        InetAddress address = InetAddress.getByName(url.getHost());
-
-        // open/connect socket
-        int port = url.getPort() != -1 ? url.getPort() : 80;
-        int timeout = 3000;
-        Socket clientSocket = new Socket();
-        clientSocket.connect(new InetSocketAddress(address, port), timeout);
-
-        BufferedInputStream clientInputStream = new BufferedInputStream(clientSocket.getInputStream());
-        OutputStream clientOutputStream = clientSocket.getOutputStream();
-
-        Logger.log(String.format("\nConnected to host %s (%s) on port %s",
-                url.getHost(), address.getHostAddress(), port), LogLevel.VERBOSE);
-        String reqVDelimiter = "\n> ";
-        Logger.log(reqVDelimiter + String.join(reqVDelimiter, request.toHeadersList()) + reqVDelimiter, LogLevel.VERBOSE);
-
-        // send request
-        clientOutputStream.write(request.toByteArray());
-        clientOutputStream.flush();
-
-        HttpResponse response = HttpResponse.fromInputStream(clientInputStream);
-
-        String resVDelimiter = "\n< ";
-        Logger.log(resVDelimiter + response.getStatus().toString(), LogLevel.VERBOSE);
-        Logger.log( "< " + String.join(resVDelimiter, response.getHeaders().toStringList()) + resVDelimiter,
-                LogLevel.VERBOSE);
-        if(response.getBody() != null) {
-            Logger.log(new String(response.getBody()));
-        }
-
-        // clean up
-        clientInputStream.close();
-        clientOutputStream.close();
-
-        clientSocket.close();
-
-        return response;
-    }
-
     private Optional<String> getRedirectLocation(HttpResponse response) {
         int statusCode = response.getStatus().getCode();
         Map<String, String> responseHeaders = response.getHeaders();
@@ -132,5 +53,19 @@ public class HttpClient {
             return Optional.of(responseHeaders.get(HttpHeaders.LOCATION));
         }
         return Optional.empty();
+    }
+
+    protected void logRequestInfo(URL url, InetAddress address, int port, HttpRequest request, HttpResponse response) {
+        Logger.log(String.format("\nConnected to host %s (%s) on port %s",
+                url.getHost(), address.getHostAddress(), port), LogLevel.VERBOSE);
+        String reqVDelimiter = "\n> ";
+        Logger.log(reqVDelimiter + String.join(reqVDelimiter, request.toHeadersList()) + reqVDelimiter, LogLevel.VERBOSE);
+        String resVDelimiter = "\n< ";
+        Logger.log(resVDelimiter + response.getStatus().toString(), LogLevel.VERBOSE);
+        Logger.log( "< " + String.join(resVDelimiter, response.getHeaders().toStringList()) + resVDelimiter,
+                LogLevel.VERBOSE);
+        if(response.getBody() != null) {
+            Logger.log(new String(response.getBody()));
+        }
     }
 }

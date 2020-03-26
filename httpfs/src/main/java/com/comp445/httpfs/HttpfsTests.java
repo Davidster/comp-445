@@ -3,9 +3,7 @@ package com.comp445.httpfs;
 import com.comp445.common.http.*;
 import com.comp445.common.logger.LogLevel;
 import com.comp445.common.logger.Logger;
-import com.comp445.httpfs.Httpfs;
 import com.comp445.httpfs.argparser.HttpfsOptions;
-import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.net.URL;
@@ -33,13 +31,13 @@ public class HttpfsTests {
 
         Files.createDirectory(tempFolderPath);
 
-        HttpClient httpClient = new HttpClient(true);
+        HttpClient httpClient = new UDPHttpClient(true);
         Httpfs httpFileServer = new Httpfs(new HttpfsOptions(true, port, Paths.get(tempFolder)));
 
         Thread serverThread = new Thread(() -> {
             try {
                 httpFileServer.startServer();
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         });

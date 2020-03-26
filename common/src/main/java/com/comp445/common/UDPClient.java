@@ -1,7 +1,9 @@
 package com.comp445.common;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 public class UDPClient {
     public static void main(String[] args) throws IOException {

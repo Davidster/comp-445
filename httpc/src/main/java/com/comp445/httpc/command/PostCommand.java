@@ -43,7 +43,7 @@ public class PostCommand extends HttpCommand {
                 HttpHeaders.fromLines(this.getHeaders()),
                 entityBody);
 
-        HttpResponse httpResponse = new HttpClient(this.isFollowRedirects())
+        HttpResponse httpResponse = new UDPHttpClient(this.isFollowRedirects())
                 .performRequest(request);
 
         postResponse(httpResponse);

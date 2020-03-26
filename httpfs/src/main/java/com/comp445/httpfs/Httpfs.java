@@ -1,9 +1,6 @@
 package com.comp445.httpfs;
 
-import com.comp445.common.http.HttpResponse;
-import com.comp445.common.http.HttpServer;
-import com.comp445.common.http.HttpStatus;
-import com.comp445.common.http.Util;
+import com.comp445.common.http.*;
 import com.comp445.common.logger.LogLevel;
 import com.comp445.common.logger.Logger;
 import com.comp445.httpfs.argparser.ArgParser;
@@ -35,7 +32,7 @@ public class Httpfs {
 
     private HttpfsOptions options;
 
-    public static void main(String[] args) throws ParseException, IOException, InterruptedException {
+    public static void main(String[] args) throws ParseException, IOException {
         if(args.length > 0 && args[0].equals("help")) {
             Logger.log(BASE_HELP);
             return;
@@ -44,13 +41,13 @@ public class Httpfs {
         new Httpfs(new ArgParser(args).parse()).startServer();
     }
 
-    public void startServer() throws IOException, InterruptedException {
+    public void startServer() throws IOException {
 
         TemplateManager.init();
 
         Logger.logLevel = options.isVerbose() ? LogLevel.VERBOSE : LogLevel.INFO;
 
-        HttpServer server = new HttpServer(options.getPort(), request -> {
+        HttpServer server = new UDPHttpServer(options.getPort(), request -> {
             Logger.log("Received a request:", LogLevel.VERBOSE);
             Logger.log(String.format("  Method: %s", request.getMethod()), LogLevel.VERBOSE);
             Logger.log(String.format("  Path: %s", request.getUrl().getPath()), LogLevel.VERBOSE);

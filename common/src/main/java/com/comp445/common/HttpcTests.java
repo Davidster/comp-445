@@ -20,7 +20,7 @@ public class HttpcTests {
     public static void main(String[] args) {
         Logger.logLevel = LogLevel.VERBOSE;
 
-        HttpClient httpClient = new HttpClient(true);
+        HttpClient httpClient = new UDPHttpClient(true);
 
         testGet(httpClient);
         testGetNoBody(httpClient);
