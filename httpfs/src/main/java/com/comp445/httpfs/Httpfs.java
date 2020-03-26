@@ -35,7 +35,7 @@ public class Httpfs {
 
     private HttpfsOptions options;
 
-    public static void main(String[] args) throws ParseException, IOException {
+    public static void main(String[] args) throws ParseException, IOException, InterruptedException {
         if(args.length > 0 && args[0].equals("help")) {
             Logger.log(BASE_HELP);
             return;
@@ -44,7 +44,7 @@ public class Httpfs {
         new Httpfs(new ArgParser(args).parse()).startServer();
     }
 
-    public void startServer() throws IOException {
+    public void startServer() throws IOException, InterruptedException {
 
         TemplateManager.init();
 

@@ -20,6 +20,9 @@ public class Util {
     public static final int BODY_READ_CHUNK_SIZE = 4000;
     public static final int MAX_BODY_SIZE = 100000000; // 100 MB
 
+    public static final int MAX_PACKET_LENGTH = 1024;
+    public static final int ARQ_ROUTER_PORT = 3000;
+
     public static boolean isEmptyLine(String s) {
         return emptyLine.matcher(s).matches();
     }
