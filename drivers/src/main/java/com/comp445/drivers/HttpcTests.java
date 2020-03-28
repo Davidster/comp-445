@@ -1,4 +1,4 @@
-package com.comp445.common;
+package com.comp445.drivers;
 
 import com.comp445.common.http.*;
 import com.comp445.common.logger.LogLevel;
@@ -10,6 +10,8 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.comp445.common.Util.doAssert;
+
 public class HttpcTests {
 
     private static final String HTTPBIN_BASE_URL = "http://httpbin.org";
@@ -20,7 +22,7 @@ public class HttpcTests {
     public static void main(String[] args) {
         Logger.logLevel = LogLevel.VERBOSE;
 
-        HttpClient httpClient = new UDPHttpClient(true);
+        HttpClient httpClient = new TCPHttpClient(true);
 
         testGet(httpClient);
         testGetNoBody(httpClient);
@@ -50,12 +52,12 @@ public class HttpcTests {
             key, value
         );
 
-        assert httpResponse.getStatus().getCode() == expectedStatusCode;
-        assert httpResponse.getStatus().getReason().equals(expectedStatusReason);
-        assert httpResponse.getHeaders().containsKey(expectedHeader.getKey());
+        doAssert(httpResponse.getStatus().getCode() == expectedStatusCode);
+        doAssert(httpResponse.getStatus().getReason().equals(expectedStatusReason));
+        doAssert(httpResponse.getHeaders().containsKey(expectedHeader.getKey()));
         assert httpResponse.getHeaders().get(expectedHeader.getKey())
                 .equals(expectedHeader.getValue());
-        assert new String(httpResponse.getBody()).contains(expectedBody);
+        doAssert(new String(httpResponse.getBody()).contains(expectedBody));
     }
 
     @SneakyThrows
@@ -70,12 +72,12 @@ public class HttpcTests {
         String expectedStatusReason = "CREATED";
         Map.Entry<String, String> expectedHeader = new AbstractMap.SimpleEntry<>("Content-Length", "0");
 
-        assert httpResponse.getStatus().getCode() == expectedStatusCode;
-        assert httpResponse.getStatus().getReason().equals(expectedStatusReason);
-        assert httpResponse.getHeaders().containsKey(expectedHeader.getKey());
+        doAssert(httpResponse.getStatus().getCode() == expectedStatusCode);
+        doAssert(httpResponse.getStatus().getReason().equals(expectedStatusReason));
+        doAssert(httpResponse.getHeaders().containsKey(expectedHeader.getKey()));
         assert httpResponse.getHeaders().get(expectedHeader.getKey())
                 .equals(expectedHeader.getValue());
-        assert httpResponse.getBody().length == 0;
+        doAssert(httpResponse.getBody().length == 0);
     }
 
     @SneakyThrows
@@ -89,8 +91,8 @@ public class HttpcTests {
         int expectedStatusCode = 200;
         String expectedStatusReason = "OK";
 
-        assert httpResponse.getStatus().getCode() == expectedStatusCode;
-        assert httpResponse.getStatus().getReason().equals(expectedStatusReason);
+        doAssert(httpResponse.getStatus().getCode() == expectedStatusCode);
+        doAssert(httpResponse.getStatus().getReason().equals(expectedStatusReason));
     }
 
     @SneakyThrows
@@ -118,11 +120,11 @@ public class HttpcTests {
                 key, value
         );
 
-        assert httpResponse.getStatus().getCode() == expectedStatusCode;
-        assert httpResponse.getStatus().getReason().equals(expectedStatusReason);
-        assert httpResponse.getHeaders().containsKey(expectedHeader.getKey());
+        doAssert(httpResponse.getStatus().getCode() == expectedStatusCode);
+        doAssert(httpResponse.getStatus().getReason().equals(expectedStatusReason));
+        doAssert(httpResponse.getHeaders().containsKey(expectedHeader.getKey()));
         assert httpResponse.getHeaders().get(expectedHeader.getKey())
                 .equals(expectedHeader.getValue());
-        assert new String(httpResponse.getBody()).contains(expectedBody);
+        doAssert(new String(httpResponse.getBody()).contains(expectedBody));
     }
 }

@@ -1,10 +1,10 @@
 package com.comp445.common.net.selectiverepeat;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -15,6 +15,7 @@ import static com.comp445.common.Util.MAX_PACKET_LENGTH;
 @AllArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode
 public class RouterPacket {
 
     private PacketType type; // 1 byte
@@ -45,7 +46,7 @@ public class RouterPacket {
         );
     }
 
-    public byte[] toByteArray() throws IOException {
+    public byte[] toByteArray() {
         return ByteBuffer.allocate(MIN_PACKET_SIZE + payload.length)
                 .put(type.getValue())
                 .putInt(sequenceNumber)
@@ -54,17 +55,4 @@ public class RouterPacket {
                 .put(payload)
                 .array();
     }
-
-//    public static void main(String[] args) throws IOException {
-//        RouterPacket somePacket = new RouterPacket(
-//                PacketType.NACK,
-//                34432985,
-//                InetAddress.getByName("localhost"),
-//                40000,
-//                new byte[]{(byte) 42, (byte) 69, (byte) 69}
-//        );
-//        byte[] asBytes = somePacket.toByteArray();
-//        RouterPacket serDeSer = fromByteArray(asBytes);
-//        System.out.println(serDeSer.payload[0]);
-//    }
 }

@@ -88,5 +88,11 @@ public class Util {
                 getHtmlPageCommonHeaders(),
                 template);
     }
+
+    public static void doAssert(boolean b) throws Exception {
+        if(!b) {
+            throw new Exception();
+        }
+    }
 }
 

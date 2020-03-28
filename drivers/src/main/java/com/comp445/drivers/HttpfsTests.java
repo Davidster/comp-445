@@ -1,8 +1,9 @@
-package com.comp445.httpfs;
+package com.comp445.drivers;
 
 import com.comp445.common.http.*;
 import com.comp445.common.logger.LogLevel;
 import com.comp445.common.logger.Logger;
+import com.comp445.httpfs.Httpfs;
 import com.comp445.httpfs.argparser.HttpfsOptions;
 
 import java.io.IOException;
@@ -12,6 +13,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
+
+import static com.comp445.common.Util.doAssert;
 
 public class HttpfsTests {
 
@@ -114,12 +117,6 @@ public class HttpfsTests {
         tryToDelete(tempFolderPath.resolve(file2Name));
         tryToDelete(tempFolderPath);
         System.exit(0);
-    }
-    
-    private static void doAssert(boolean b) throws Exception {
-        if(!b) {
-            throw new Exception();
-        }
     }
 
     private static void tryToDelete(Path filePath) {

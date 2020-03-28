@@ -23,7 +23,7 @@ public class GetCommand extends HttpCommand {
                 parsedUrl,
                 HttpHeaders.fromLines(this.getHeaders()));
 
-        HttpResponse httpResponse = new UDPHttpClient(this.isFollowRedirects())
+        HttpResponse httpResponse = new TCPHttpClient(this.isFollowRedirects())
                 .performRequest(request);
 
         postResponse(httpResponse);
