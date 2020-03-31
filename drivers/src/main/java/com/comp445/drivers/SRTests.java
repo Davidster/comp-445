@@ -57,36 +57,12 @@ public class SRTests {
         serverFuture.join();
         srServer.close();
         srClient.close();
-        srServerClient.get().close();
+        if(srServerClient.get() != null) {
+            srServerClient.get().close();
+        }
         System.out.println("----------------------");
+        // give os some time to unbind port
+        Thread.sleep(25);
     }
 
 }
-
-//        SRServerSocket serverSocket = new SRServerSocket(REC_PORT);
-//        SRSocket serverClientSocket = new SRSocket(serverSocket.getUdpSocket());
-//        SRSocket clientSocket = new SRSocket();
-//
-//        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-//
-//            try {
-//                System.out.println(System.currentTimeMillis() + " waiting for first packet");
-//                SRPacket packet1 = PacketUtils.receiveSRPacket(serverSocket, SR_MAX_PACKET_LENGTH);
-//                System.out.println(System.currentTimeMillis() + " got first packet");
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//
-//            System.out.println(System.currentTimeMillis() + " waiting for second packet");
-//            try {
-//                SRPacket ackRecPacket = PacketUtils.receiveSRPacketAsync(serverClientSocket, Utils.SR_MAX_PACKET_LENGTH).orTimeout(1000, TimeUnit.MILLISECONDS).join();
-//            } catch(Exception e) {
-//                e.printStackTrace();
-//                System.out.println(System.currentTimeMillis() + " timeout while waiting for second packet");
-//            }
-//        });
-//
-//        Thread.sleep(100);
-//        PacketUtils.sendSRPacketToRouter(clientSocket, PacketType.SYN, InetAddress.getByName("localhost"), REC_PORT);
-//
-//        future.join();

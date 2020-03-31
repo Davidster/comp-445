@@ -85,9 +85,7 @@ public class HttpClient {
         clientOutputStream.flush();
 
         // get response
-        System.out.println(System.currentTimeMillis() + " awaiting response from server");
         HttpResponse response = HttpResponse.fromInputStream(clientInputStream);
-        System.out.println(System.currentTimeMillis() + " got response from server");
 
         String resVDelimiter = "\n< ";
         Logger.log(resVDelimiter + response.getStatus().toString(), LogLevel.VERBOSE);

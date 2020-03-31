@@ -33,7 +33,7 @@ public class Utils {
     public static final int UDP_MAX_PACKET_LENGTH = Short.MAX_VALUE * 2 + 1;
 
     public static final int SR_MAX_PACKET_LENGTH = 1024;
-    public static final int SR_SERVER_CONNECTION_TIMEOUT = 90000;
+    public static final int SR_SERVER_CONNECTION_TIMEOUT = 3000;
     public static final float SR_CLOCK_GRANULARITY = 10f;
 
     public static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();

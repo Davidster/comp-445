@@ -45,7 +45,6 @@ public class PacketUtils {
     public static DatagramPacket receiveUDPPacket(DatagramSocket socket, int maxPacketLength) throws IOException {
         byte[] recBuffer = new byte[maxPacketLength];
         DatagramPacket packet = new DatagramPacket(recBuffer, recBuffer.length);
-        socket.setSoTimeout(0);
         socket.receive(packet);
         return packet;
     }
@@ -83,6 +82,7 @@ public class PacketUtils {
             try {
                 socket.setSoTimeout(timeout);
                 socket.receive(udpPacket);
+                socket.setSoTimeout(0);
             } catch (IOException e) {
                 throw new CompletionException(e);
             }

@@ -36,7 +36,8 @@ public class SRServerSocket implements IServerSocket, UDPSocketContainer, Closea
                 clientSocket.doHandshake(inetDestination, Utils.SR_SERVER_CONNECTION_TIMEOUT, PacketType.SYNACK, PacketType.ACK);
             } catch(SocketTimeoutException e) {
                 System.out.println("Socket timeout");
-                continue;
+//                continue;
+                return null;
             }
 
             clientSocket.implicitConnect(inetDestination);
