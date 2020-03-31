@@ -35,6 +35,7 @@ public class Utils {
     public static final int SR_MAX_PACKET_LENGTH = 1024;
     public static final int SR_SERVER_CONNECTION_TIMEOUT = 3000;
     public static final float SR_CLOCK_GRANULARITY = 10f;
+    public static final int SR_MAX_SEQUENCE_NUM = Short.MAX_VALUE * 2;
 
     public static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
 
@@ -107,7 +108,7 @@ public class Utils {
 
     public static void sleep(int millis) {
         try {
-            Thread.sleep((int)SR_CLOCK_GRANULARITY);
+            Thread.sleep(millis);
         } catch (InterruptedException ignored) {}
     }
 
@@ -118,6 +119,10 @@ public class Utils {
             } catch (InterruptedException ignored) {}
             return null;
         });
+    }
+
+    public static int nextSequenceNumber(int currentSequenceNumber) {
+        return (currentSequenceNumber + 1) % SR_MAX_SEQUENCE_NUM;
     }
 }
 

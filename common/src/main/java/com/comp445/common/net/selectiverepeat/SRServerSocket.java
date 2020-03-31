@@ -32,8 +32,9 @@ public class SRServerSocket implements IServerSocket, UDPSocketContainer, Closea
 
             InetSocketAddress inetDestination = new InetSocketAddress(synRecPacket.getPeerAddress(), synRecPacket.getPort());
             SRSocket clientSocket = new SRSocket(this.udpSocket);
+            clientSocket.setPeerSequenceNumber(Utils.nextSequenceNumber(synRecPacket.getSequenceNumber()));
             try {
-                clientSocket.doHandshake(inetDestination, Utils.SR_SERVER_CONNECTION_TIMEOUT, PacketType.SYNACK, PacketType.ACK);
+                SRPacket ackPacket = clientSocket.doHandshake(inetDestination, Utils.SR_SERVER_CONNECTION_TIMEOUT, PacketType.SYNACK, PacketType.ACK);
             } catch(SocketTimeoutException e) {
                 System.out.println("Socket timeout");
 //                continue;

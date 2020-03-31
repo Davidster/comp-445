@@ -15,23 +15,22 @@ public class SRInputStream extends InputStream {
 
     public SRInputStream(DatagramSocket socket) {
         this.socket = socket;
-//        this.buffer = new byte[0];
         this.position = 0;
     }
 
     @Override
     public int read() throws IOException {
-        if (buffer == null) {
+        if (this.buffer == null) {
             byte[] recBuffer = new byte[SR_MAX_PACKET_LENGTH];
             DatagramPacket recPacket = new DatagramPacket(recBuffer, recBuffer.length);
             socket.receive(recPacket);
             SRPacket receivedSRPacket = SRPacket.fromUDPPacket(recPacket);
-            buffer = receivedSRPacket.getPayload();
+            this.buffer = receivedSRPacket.getPayload();
             position = 0;
         }
-        if(position == buffer.length) {
+        if(position == this.buffer.length) {
             return -1;
         }
-        return buffer[position++];
+        return this.buffer[position++];
     }
 }

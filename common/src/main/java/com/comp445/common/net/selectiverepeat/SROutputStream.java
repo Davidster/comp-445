@@ -27,26 +27,27 @@ public class SROutputStream extends OutputStream {
 
     @Override
     public void flush() throws IOException {
-        if (size == 0) {
+        if (this.size == 0) {
             return;
         }
 
-        SRPacket sendSRPacket = new SRPacket();
-        sendSRPacket.setPeerAddress(destination.getAddress());
-        sendSRPacket.setPort(destination.getPort());
-        sendSRPacket.setPayload(Arrays.copyOfRange(buffer, 0, size));
+        SRPacket sendSRPacket = SRPacket.builder()
+                .peerAddress(this.destination.getAddress())
+                .port(this.destination.getPort())
+                .payload(Arrays.copyOfRange(this.buffer, 0, size))
+                .build();
         byte[] sendBuffer = sendSRPacket.toByteArray();
-        DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, destination.getAddress(), ARQ_ROUTER_PORT);
-        socket.send(sendPacket);
+        DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, this.destination.getAddress(), ARQ_ROUTER_PORT);
+        this.socket.send(sendPacket);
 
-        Arrays.fill(buffer, (byte)0);
-        size = 0;
+        Arrays.fill(this.buffer, (byte)0);
+        this.size = 0;
     }
 
     @Override
     public void write(int b) throws IOException {
-        buffer[size++] = (byte)b;
-        if (size == SR_MAX_PACKET_LENGTH) {
+        this.buffer[size++] = (byte)b;
+        if (this.size == SR_MAX_PACKET_LENGTH) {
             flush();
         }
     }

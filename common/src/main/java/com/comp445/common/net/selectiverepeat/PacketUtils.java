@@ -28,13 +28,22 @@ public class PacketUtils {
     }
 
     public static void sendSRPacket(UDPSocketContainer socketContainer, PacketType type, InetAddress destination, int port, byte[] payload, int routerPort) throws IOException {
-        SRPacket srPacket = new SRPacket();
-        srPacket.setType(type);
-        srPacket.setPeerAddress(destination);
-        srPacket.setPort(port);
-        srPacket.setPayload(payload);
-        byte[] sendBuffer = srPacket.toByteArray();
-        DatagramPacket udpPacket = new DatagramPacket(sendBuffer, sendBuffer.length, destination, routerPort);
+        SRPacket srPacket = SRPacket.builder()
+                .type(type)
+                .peerAddress(destination)
+                .port(port)
+                .payload(payload)
+                .build();
+        sendSRPacket(socketContainer, srPacket, routerPort);
+    }
+
+    public static void sendSRPacketToRouter(UDPSocketContainer socketContainer, SRPacket packet) throws IOException {
+        sendSRPacket(socketContainer, packet, ARQ_ROUTER_PORT);
+    }
+
+    public static void sendSRPacket(UDPSocketContainer socketContainer, SRPacket packet, int routerPort) throws IOException {
+        byte[] sendBuffer = packet.toByteArray();
+        DatagramPacket udpPacket = new DatagramPacket(sendBuffer, sendBuffer.length, packet.getPeerAddress(), routerPort);
         socketContainer.getUdpSocket().send(udpPacket);
     }
 

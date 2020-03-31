@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 
+import static com.comp445.common.Utils.EXECUTOR;
 import static com.comp445.common.Utils.doAssert;
 
 public class AsyncSocketTests {
@@ -32,6 +33,8 @@ public class AsyncSocketTests {
         } catch(Exception e) {
             System.out.println(System.currentTimeMillis() + " Tests failed");
         }
+
+        EXECUTOR.shutdown();
     }
 
     public static void testUDP() throws Exception {
