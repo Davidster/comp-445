@@ -45,6 +45,7 @@ public class PacketUtils {
     public static DatagramPacket receiveUDPPacket(DatagramSocket socket, int maxPacketLength) throws IOException {
         byte[] recBuffer = new byte[maxPacketLength];
         DatagramPacket packet = new DatagramPacket(recBuffer, recBuffer.length);
+        socket.setSoTimeout(0);
         socket.receive(packet);
         return packet;
     }
@@ -58,7 +59,7 @@ public class PacketUtils {
     }
 
     public static CompletableFuture<SRPacket> receiveSRPacketAsync(UDPSocketContainer socketContainer, int maxPacketLength) {
-        return receiveSRPacketAsync(socketContainer, maxPacketLength, -1);
+        return receiveSRPacketAsync(socketContainer, maxPacketLength, 0);
     }
 
     public static CompletableFuture<SRPacket> receiveSRPacketAsync(UDPSocketContainer socketContainer, int maxPacketLength, int timeout) {
@@ -72,7 +73,7 @@ public class PacketUtils {
     }
 
     public static CompletableFuture<DatagramPacket> receiveUDPPacketAsync(DatagramSocket socket, int maxPacketLength) {
-        return receiveUDPPacketAsync(socket, maxPacketLength, -1);
+        return receiveUDPPacketAsync(socket, maxPacketLength, 0);
     }
 
     public static CompletableFuture<DatagramPacket> receiveUDPPacketAsync(DatagramSocket socket, int maxPacketLength, int timeout) {
@@ -80,9 +81,7 @@ public class PacketUtils {
         DatagramPacket udpPacket = new DatagramPacket(recBuffer, recBuffer.length);
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if(timeout > 0) {
-                    socket.setSoTimeout(timeout);
-                }
+                socket.setSoTimeout(timeout);
                 socket.receive(udpPacket);
             } catch (IOException e) {
                 throw new CompletionException(e);

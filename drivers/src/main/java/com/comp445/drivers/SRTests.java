@@ -9,10 +9,11 @@ import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.comp445.common.Utils.EXECUTOR;
 
-public class SelectiveRepeatTests {
+public class SRTests {
 
     public static final int REC_PORT = 8888;
 
@@ -29,6 +30,7 @@ public class SelectiveRepeatTests {
         testConnect();
         testConnect();
         testConnect();
+        System.out.println();
         EXECUTOR.shutdown();
     }
 
@@ -36,12 +38,13 @@ public class SelectiveRepeatTests {
 
         SRSocket srClient = new SRSocket();
         SRServerSocket srServer = new SRServerSocket(REC_PORT);
+        AtomicReference<SRSocket> srServerClient = new AtomicReference<>();
 
         Instant start = Instant.now();
 
         CompletableFuture<Void> serverFuture = CompletableFuture.runAsync(() -> {
             try {
-                srServer.acceptClient();
+                srServerClient.set(srServer.acceptClient());
                 System.out.println(System.currentTimeMillis() + " Server connected in " + Duration.between(start, Instant.now()).toMillis() + "ms");
             } catch (IOException e) {
                 e.printStackTrace();
@@ -54,6 +57,7 @@ public class SelectiveRepeatTests {
         serverFuture.join();
         srServer.close();
         srClient.close();
+        srServerClient.get().close();
         System.out.println("----------------------");
     }
 

@@ -21,8 +21,6 @@ public class SRSocket implements ISocket, UDPSocketContainer, Closeable {
     private SRInputStream inputStream;
     private SROutputStream outputStream;
     private ConnectionTimer connectionTimer;
-//    private int sequenceNumber;
-//    private ConnectionState connectionState = IDLE;
 
     public SRSocket(DatagramSocket udpSocket) {
         this.udpSocket = udpSocket;
@@ -33,56 +31,54 @@ public class SRSocket implements ISocket, UDPSocketContainer, Closeable {
     }
 
     public void connect(SocketAddress destination, int connectionTimeout) throws IOException {
-//        this.connectionState = CONNECTING;
         InetSocketAddress inetDestination = (InetSocketAddress)destination;
-        this.connectionTimer = new ConnectionTimer(connectionTimeout);
-        RTOCalculator rtoCalculator = new RTOCalculator();
 
-        boolean canMeasureRtt = true;
-        SRPacket synAckRecPacket = null;
-        while(true) {
-            if (connectionTimer.isTimedOut()) {
-                throw new SocketTimeoutException("Socket timed out during handshake");
-            }
-            CompletableFuture<SRPacket> synAckRecFuture = PacketUtils.receiveSRPacketAsync(this, Utils.SR_MAX_PACKET_LENGTH, rtoCalculator.getLatestRto());
-            Utils.sleep((int)SR_CLOCK_GRANULARITY);
-            PacketUtils.sendSRPacketToRouter(this, PacketType.SYN, inetDestination.getAddress(), inetDestination.getPort());
-            Instant sendTime = Instant.now();
-            System.out.println(System.currentTimeMillis() + " Client: sent SYN");
-            try {
-                synAckRecPacket = PacketUtils.awaitTimeoutableSRPacket(synAckRecFuture);
-                if(canMeasureRtt) {
-                    rtoCalculator.update(Duration.between(sendTime, Instant.now()).toMillis());
-                    System.out.println(System.currentTimeMillis() + " Client: updated rto: " + rtoCalculator.getLatestRto());
-                }
-
-                connectionTimer.reset();
-//                System.out.println(System.currentTimeMillis() + " client received response from server: " + synAckRecPacket.toString());
-                System.out.println(System.currentTimeMillis() + " Client: received " + synAckRecPacket.getType().toString());
-                if(synAckRecPacket.getType().equals(PacketType.SYNACK)) {
-                    break;
-                } else {
-                    canMeasureRtt = false;
-                }
-            } catch (SocketTimeoutException ignored) {
-                System.out.println(System.currentTimeMillis() + " Client: timed out while waiting for SYNACK");
-                rtoCalculator.onTimeout();
-                System.out.println(System.currentTimeMillis() + " Client: updated rto: " + rtoCalculator.getLatestRto());
-                canMeasureRtt = false;
-            }
-        }
+        doHandshake(inetDestination, connectionTimeout, PacketType.SYN, PacketType.SYNACK);
 
         Utils.sleep((int)SR_CLOCK_GRANULARITY);
-        PacketUtils.sendSRPacketToRouter(this, PacketType.ACK, synAckRecPacket.getPeerAddress(), synAckRecPacket.getPort());
-        System.out.println(System.currentTimeMillis() + " Client: sent ACK");
-//        this.connectionState = CONNECTED;
+        PacketUtils.sendSRPacketToRouter(this, PacketType.ACK, inetDestination.getAddress(), inetDestination.getPort());
 
         this.inputStream = new SRInputStream(udpSocket);
         this.outputStream = new SROutputStream(udpSocket, inetDestination);
     }
 
+    public void doHandshake(InetSocketAddress inetDestination, int connectionTimeout, PacketType synType, PacketType expectedAckType) throws IOException {
+
+        this.connectionTimer = new ConnectionTimer(connectionTimeout);
+        RTOCalculator rtoCalculator = new RTOCalculator();
+        boolean canMeasureRtt = true;
+
+        SRPacket ackRecPacket = null;
+        while(true) {
+            // TODO: since the below packet receive call is blocking, must somehow convert the timer to make it interrupt
+            if (connectionTimer.isTimedOut()) {
+                throw new SocketTimeoutException("Socket timed out during handshake");
+            }
+
+            CompletableFuture<SRPacket> ackRecFuture = PacketUtils.receiveSRPacketAsync(this, Utils.SR_MAX_PACKET_LENGTH, rtoCalculator.getLatestRto());
+            Utils.sleep((int)SR_CLOCK_GRANULARITY);
+            PacketUtils.sendSRPacketToRouter(this, synType, inetDestination.getAddress(), inetDestination.getPort());
+            Instant sendTime = Instant.now();
+
+            try {
+                ackRecPacket = PacketUtils.awaitTimeoutableSRPacket(ackRecFuture);
+                if(canMeasureRtt) {
+                    rtoCalculator.update(Duration.between(sendTime, Instant.now()).toMillis());
+                }
+                connectionTimer.reset();
+                if(ackRecPacket.getType().equals(expectedAckType)) {
+                    break;
+                } else {
+                    canMeasureRtt = false;
+                }
+            } catch (SocketTimeoutException ignored) {
+                rtoCalculator.onTimeout();
+                canMeasureRtt = false;
+            }
+        }
+    }
+
     public void implicitConnect(SocketAddress destination) {
-//        this.connectionState = CONNECTED;
         this.inputStream = new SRInputStream(udpSocket);
         this.outputStream = new SROutputStream(udpSocket, (InetSocketAddress)destination);
     }
