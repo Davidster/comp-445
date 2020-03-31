@@ -1,6 +1,6 @@
 package com.comp445.httpc.argparser;
 
-import com.comp445.common.Util;
+import com.comp445.common.Utils;
 import com.comp445.httpc.command.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.ParseException;
@@ -47,7 +47,7 @@ public class ArgParser {
                 break;
             default:
                 parsedCommand = new UnknownCommand(
-                        Util.parseCliArgString(args.get(0)));
+                        Utils.parseCliArgString(args.get(0)));
                 break;
         }
 
@@ -62,7 +62,7 @@ public class ArgParser {
         }
 
         CommandType commandToDescribe = CommandType.UNKNOWN;
-        String subCommand = Util.parseCliArgString(commandArgs.get(0));
+        String subCommand = Utils.parseCliArgString(commandArgs.get(0));
         switch(subCommand) {
             case "get":
                 commandToDescribe = CommandType.HTTP_GET;
@@ -87,9 +87,9 @@ public class ArgParser {
 
         optCmd.ifPresent(cmd -> {
             postCommand.setInlineData(
-                    Util.parseCliArgString(cmd.getOptionValue(INLINE_DATA_ARG_KEY)));
+                    Utils.parseCliArgString(cmd.getOptionValue(INLINE_DATA_ARG_KEY)));
             postCommand.setDataFilePath(
-                    Util.parseCliArgString(cmd.getOptionValue(FILE_DATA_PATH_ARG_KEY)));
+                    Utils.parseCliArgString(cmd.getOptionValue(FILE_DATA_PATH_ARG_KEY)));
         });
 
         return postCommand;
@@ -100,7 +100,7 @@ public class ArgParser {
             return Optional.empty();
         }
 
-        String requestUrl = Util.parseCliArgString(
+        String requestUrl = Utils.parseCliArgString(
                 commandArgs.remove(commandArgs.size() - 1));
         httpCommand.setRequestUrl(requestUrl);
 
@@ -123,7 +123,7 @@ public class ArgParser {
         if(headerArgs != null && headerArgs.length > 0) {
             httpCommand.setHeaders(
                     Stream.of(headerArgs)
-                            .map(Util::parseCliArgString)
+                            .map(Utils::parseCliArgString)
                             .collect(Collectors.toList())
             );
         }

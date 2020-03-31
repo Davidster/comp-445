@@ -16,7 +16,7 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.comp445.common.Util.DEFAULT_TIMEOUT;
+import static com.comp445.common.Utils.DEFAULT_SOCKET_TIMEOUT;
 
 @AllArgsConstructor
 public class HttpClient {
@@ -71,7 +71,7 @@ public class HttpClient {
         InetAddress address = InetAddress.getByName(url.getHost());
         int port = url.getPort() != -1 ? url.getPort() : 80;
         ISocket clientSocket = socketClass.getConstructor().newInstance();
-        clientSocket.connect(new InetSocketAddress(address, port), DEFAULT_TIMEOUT);
+        clientSocket.connect(new InetSocketAddress(address, port), DEFAULT_SOCKET_TIMEOUT);
         BufferedInputStream clientInputStream = new BufferedInputStream(clientSocket.getInputStream());
         OutputStream clientOutputStream = clientSocket.getOutputStream();
 
@@ -85,7 +85,9 @@ public class HttpClient {
         clientOutputStream.flush();
 
         // get response
+        System.out.println(System.currentTimeMillis() + " awaiting response from server");
         HttpResponse response = HttpResponse.fromInputStream(clientInputStream);
+        System.out.println(System.currentTimeMillis() + " got response from server");
 
         String resVDelimiter = "\n< ";
         Logger.log(resVDelimiter + response.getStatus().toString(), LogLevel.VERBOSE);

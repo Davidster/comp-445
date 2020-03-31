@@ -1,6 +1,6 @@
 package com.comp445.common.http;
 
-import com.comp445.common.Util;
+import com.comp445.common.Utils;
 import lombok.*;
 
 import java.io.BufferedInputStream;
@@ -29,7 +29,7 @@ public class HttpRequest {
 
     public static HttpRequest fromInputStream(BufferedInputStream input) throws IOException {
         // parse method
-        String methodLine = Util.readLine(input).trim();
+        String methodLine = Utils.readLine(input).trim();
         String[] methodLineSplit = methodLine.split(" ");
         HttpMethod method = HttpMethod.valueOf(methodLineSplit[0]);
         String path = methodLineSplit.length > 1 ?

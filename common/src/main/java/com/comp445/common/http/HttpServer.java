@@ -26,7 +26,9 @@ public class HttpServer {
 
         //noinspection InfiniteLoopStatement
         while (true) {
+            System.out.println(System.currentTimeMillis() + " accepting client");
             ISocket serverClientSocket = serverSocket.acceptClient();
+            System.out.println(System.currentTimeMillis() + " accepted client");
             BufferedInputStream serverInputStream = new BufferedInputStream(serverClientSocket.getInputStream());
             OutputStream serverOutputStream = serverClientSocket.getOutputStream();
             HttpRequest request = HttpRequest.fromInputStream(serverInputStream);

@@ -1,6 +1,6 @@
 package com.comp445.common.http;
 
-import com.comp445.common.Util;
+import com.comp445.common.Utils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -33,7 +33,7 @@ public class HttpResponse {
 
     public static HttpResponse fromInputStream(BufferedInputStream input) throws IOException {
         // parse status
-        String statusLine =  Util.readLine(input).trim();
+        String statusLine =  Utils.readLine(input).trim();
         String[] statusLineSplit = statusLine.split(" ");
         String httpVersion = statusLineSplit[0];
         int statusCode = statusLineSplit.length > 1 ?

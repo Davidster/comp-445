@@ -1,6 +1,6 @@
 package com.comp445.httpfs;
 
-import com.comp445.common.Util;
+import com.comp445.common.Utils;
 import com.comp445.common.http.HttpResponse;
 import com.comp445.common.http.HttpServer;
 import com.comp445.common.http.HttpStatus;
@@ -65,7 +65,7 @@ public class Httpfs {
                 Logger.log("*********END BODY***********\n", LogLevel.VERBOSE);
             }
 
-            HttpResponse response = Util.handleError(TemplateManager.TEMPLATE_500);
+            HttpResponse response = Utils.handleError(TemplateManager.TEMPLATE_500);
 
             Path requestPath = Paths.get(request.getUrl().getPath().substring(1));
             Path workingDir = options.getWorkingDirectory().normalize().toAbsolutePath();
@@ -93,7 +93,7 @@ public class Httpfs {
     private static HttpResponse handleUnauthorized() {
         return new HttpResponse(
                 new HttpStatus(HttpStatus.STATUS_FORBIDDEN),
-                Util.getHtmlPageCommonHeaders(),
+                Utils.getHtmlPageCommonHeaders(),
                 TemplateManager.TEMPLATE_403);
     }
 }

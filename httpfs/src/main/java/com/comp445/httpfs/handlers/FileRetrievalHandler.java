@@ -1,6 +1,6 @@
 package com.comp445.httpfs.handlers;
 
-import com.comp445.common.Util;
+import com.comp445.common.Utils;
 import com.comp445.common.http.HttpHeaders;
 import com.comp445.common.http.HttpResponse;
 import com.comp445.common.http.HttpStatus;
@@ -17,7 +17,7 @@ public class FileRetrievalHandler implements Function<Path, HttpResponse> {
 
     @Override
     public HttpResponse apply(Path path) {
-        HttpResponse catchAll = Util.handleError(TemplateManager.TEMPLATE_500);
+        HttpResponse catchAll = Utils.handleError(TemplateManager.TEMPLATE_500);
         try {
             if(!Files.exists(path)) {
                 return handleNonExistent();
@@ -45,7 +45,7 @@ public class FileRetrievalHandler implements Function<Path, HttpResponse> {
     }
 
     private HttpResponse handleDirectory(Path path) throws IOException {
-        List<Path> files = Util.listFiles(path);
+        List<Path> files = Utils.listFiles(path);
 
         String pageTitle = path.getFileName() + "/";
         String pageBody;
@@ -63,14 +63,14 @@ public class FileRetrievalHandler implements Function<Path, HttpResponse> {
         }
         return new HttpResponse(
                 new HttpStatus(HttpStatus.STATUS_OK),
-                Util.getHtmlPageCommonHeaders(),
+                Utils.getHtmlPageCommonHeaders(),
                 String.format(TemplateManager.TEMPLATE_DIRECTORY_LISTING, pageTitle, pageBody));
     }
 
     private HttpResponse handleNonExistent() {
         return new HttpResponse(
                 new HttpStatus(HttpStatus.STATUS_NOT_FOUND),
-                Util.getHtmlPageCommonHeaders(),
+                Utils.getHtmlPageCommonHeaders(),
                 TemplateManager.TEMPLATE_404);
     }
 }

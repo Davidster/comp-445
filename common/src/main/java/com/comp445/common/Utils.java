@@ -11,11 +11,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class Util {
+public class Utils {
     public static final Pattern emptyLine = Pattern.compile("^\\s*$");
 
     private static char QUOTE = '\'';
@@ -24,9 +27,16 @@ public class Util {
     public static final int BODY_READ_CHUNK_SIZE = 4000;
     public static final int MAX_BODY_SIZE = 100000000; // 100 MB
 
-    public static final int MAX_PACKET_LENGTH = 1024;
     public static final int ARQ_ROUTER_PORT = 3000;
-    public static final int DEFAULT_TIMEOUT = 3000;
+    public static final int DEFAULT_SOCKET_TIMEOUT = 5000;
+
+    public static final int UDP_MAX_PACKET_LENGTH = Short.MAX_VALUE * 2 + 1;
+
+    public static final int SR_MAX_PACKET_LENGTH = 1024;
+    public static final int SR_SERVER_CONNECTION_TIMEOUT = 90000;
+    public static final float SR_CLOCK_GRANULARITY = 10f;
+
+    public static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
 
     public static boolean isEmptyLine(String s) {
         return emptyLine.matcher(s).matches();
@@ -93,6 +103,21 @@ public class Util {
         if(!b) {
             throw new Exception();
         }
+    }
+
+    public static void sleep(int millis) {
+        try {
+            Thread.sleep((int)SR_CLOCK_GRANULARITY);
+        } catch (InterruptedException ignored) {}
+    }
+
+    public static Future<Void> asyncTimer(int timeout) {
+        return EXECUTOR.submit(() -> {
+            try {
+                Thread.sleep(timeout);
+            } catch (InterruptedException ignored) {}
+            return null;
+        });
     }
 }
 

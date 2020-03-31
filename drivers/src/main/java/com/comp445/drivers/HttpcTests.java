@@ -10,7 +10,7 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.comp445.common.Util.doAssert;
+import static com.comp445.common.Utils.doAssert;
 
 public class HttpcTests {
 
