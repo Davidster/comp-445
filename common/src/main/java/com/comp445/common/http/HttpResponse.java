@@ -43,9 +43,17 @@ public class HttpResponse {
                 statusLine.substring(statusLine.indexOf(statusLineSplit[1]) + 4)
                 : null;
 
+
         HttpHeaders headers = HttpHeaders.fromInputStream(input);
 
-        byte[] body = input.readAllBytes();
+        byte[] body = null;
+        String contentLengthString = headers.get(HttpHeaders.CONTENT_LENGTH);
+        if(contentLengthString != null) {
+            int contentLength = Integer.parseInt(contentLengthString);
+            body = contentLength > 0 ?
+                    input.readNBytes(contentLength)
+                    : new byte[0];
+        }
 
         return new HttpResponse(new HttpStatus(httpVersion, statusCode, statusReason), headers, body);
     }

@@ -77,8 +77,8 @@ public class AsyncSocketTests {
 
         boolean timedOut = false;
         try {
-            CompletableFuture<SRPacket> recFuture = PacketUtils.receiveSRPacketAsync(recSocket, Utils.UDP_MAX_PACKET_LENGTH, REC_TIMEOUT);
-            CompletableFuture<SRPacket> recFuture2 = PacketUtils.receiveSRPacketAsync(recSocket, Utils.UDP_MAX_PACKET_LENGTH, REC_TIMEOUT);
+            CompletableFuture<SRPacket> recFuture = PacketUtils.receiveSRPacketAsync(recSocket, REC_TIMEOUT);
+            CompletableFuture<SRPacket> recFuture2 = PacketUtils.receiveSRPacketAsync(recSocket, REC_TIMEOUT);
             Thread.sleep(WAIT_BEFORE_SEND);
             byte[] sendBuffer = new byte[]{ (byte)42, (byte)69 };
             PacketUtils.sendSRPacket(sendSocket, PacketType.DATA, InetAddress.getByName("localhost"), REC_PORT, sendBuffer);

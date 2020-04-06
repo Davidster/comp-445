@@ -1,5 +1,6 @@
 package com.comp445.common.net.selectiverepeat;
 
+import com.comp445.common.Utils;
 import com.comp445.common.net.UDPSocketContainer;
 
 import java.io.IOException;
@@ -47,8 +48,8 @@ public class PacketUtils {
         socketContainer.getUdpSocket().send(udpPacket);
     }
 
-    public static SRPacket receiveSRPacket(UDPSocketContainer socketContainer, int maxPacketLength) throws IOException {
-        return SRPacket.fromUDPPacket(receiveUDPPacket(socketContainer.getUdpSocket(), maxPacketLength));
+    public static SRPacket receiveSRPacket(UDPSocketContainer socketContainer) throws IOException {
+        return SRPacket.fromUDPPacket(receiveUDPPacket(socketContainer.getUdpSocket(), Utils.SR_MAX_PACKET_LENGTH));
     }
 
     public static DatagramPacket receiveUDPPacket(DatagramSocket socket, int maxPacketLength) throws IOException {
@@ -58,20 +59,20 @@ public class PacketUtils {
         return packet;
     }
 
-    public static SRPacket receiveSRPacket(UDPSocketContainer socketContainer, int maxPacketLength, int timeout) throws SocketTimeoutException {
-        return awaitTimeoutableSRPacket(receiveSRPacketAsync(socketContainer, maxPacketLength, timeout));
+    public static SRPacket receiveSRPacket(UDPSocketContainer socketContainer, int timeout) throws SocketTimeoutException {
+        return awaitTimeoutableSRPacket(receiveSRPacketAsync(socketContainer, timeout));
     }
 
     public static DatagramPacket receiveUDPPacket(DatagramSocket socket, int maxPacketLength, int timeout) throws SocketTimeoutException {
         return awaitTimeoutableUDPPacket(receiveUDPPacketAsync(socket, maxPacketLength, timeout));
     }
 
-    public static CompletableFuture<SRPacket> receiveSRPacketAsync(UDPSocketContainer socketContainer, int maxPacketLength) {
-        return receiveSRPacketAsync(socketContainer, maxPacketLength, 0);
+    public static CompletableFuture<SRPacket> receiveSRPacketAsync(UDPSocketContainer socketContainer) {
+        return receiveSRPacketAsync(socketContainer, 0);
     }
 
-    public static CompletableFuture<SRPacket> receiveSRPacketAsync(UDPSocketContainer socketContainer, int maxPacketLength, int timeout) {
-        return receiveUDPPacketAsync(socketContainer.getUdpSocket(), maxPacketLength, timeout).thenApply(udpPacket -> {
+    public static CompletableFuture<SRPacket> receiveSRPacketAsync(UDPSocketContainer socketContainer, int timeout) {
+        return receiveUDPPacketAsync(socketContainer.getUdpSocket(), Utils.SR_MAX_PACKET_LENGTH, timeout).thenApply(udpPacket -> {
             try {
                 return SRPacket.fromUDPPacket(udpPacket);
             } catch (UnknownHostException e) {

@@ -4,7 +4,6 @@ import com.comp445.common.Utils;
 import com.comp445.common.net.ISocket;
 import com.comp445.common.net.UDPSocketContainer;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -12,14 +11,15 @@ import java.net.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.comp445.common.Utils.EXECUTOR;
-import static com.comp445.common.Utils.SR_CLOCK_GRANULARITY;
+import static com.comp445.common.Utils.*;
 
 @Getter
 public class SRSocket implements ISocket, UDPSocketContainer, Closeable {
@@ -27,8 +27,9 @@ public class SRSocket implements ISocket, UDPSocketContainer, Closeable {
     private DatagramSocket udpSocket;
     private SRInputStream inputStream;
     private SROutputStream outputStream;
-    private int sequenceNumber;
-    @Setter private int peerSequenceNumber;
+    private InetSocketAddress destination;
+
+
 
     public SRSocket(DatagramSocket udpSocket) {
         this.udpSocket = udpSocket;
@@ -38,32 +39,44 @@ public class SRSocket implements ISocket, UDPSocketContainer, Closeable {
     public SRSocket() throws SocketException {
         this.udpSocket = new DatagramSocket();
         init();
+
     }
 
-    private void init() {
-        this.sequenceNumber = new Random().nextInt(Utils.SR_MAX_SEQUENCE_NUM);
+    public void init() {
     }
 
     public void connect(SocketAddress destination, int connectionTimeout) throws IOException {
-        InetSocketAddress inetDestination = (InetSocketAddress)destination;
+        this.destination = (InetSocketAddress)destination;
+        int sequenceNumber = new Random().nextInt(Utils.SR_MAX_SEQUENCE_NUM);
 
-        SRPacket synAckPacket = doHandshake(inetDestination, connectionTimeout, PacketType.SYN, PacketType.SYNACK);
-        this.peerSequenceNumber = synAckPacket.getSequenceNumber();
+        SRPacket synAckPacket = doHandshake(this.destination, connectionTimeout, PacketType.SYN, PacketType.SYNACK, sequenceNumber);
+        int peerSequenceNumber = Utils.incSeqNum(synAckPacket.getSequenceNumber());
 
         Utils.sleep((int)SR_CLOCK_GRANULARITY);
         SRPacket srPacket = SRPacket.builder()
                 .type(PacketType.ACK)
-                .ackSequenceNumber(Utils.nextSequenceNumber(this.peerSequenceNumber))
-                .peerAddress(inetDestination.getAddress())
-                .port(inetDestination.getPort())
+                .ackSequenceNumber(peerSequenceNumber)
+                .peerAddress(this.destination.getAddress())
+                .port(this.destination.getPort())
                 .build();
         sendPacket(srPacket);
 
-        this.inputStream = new SRInputStream(udpSocket);
-        this.outputStream = new SROutputStream(udpSocket, inetDestination);
+
+        this.outputStream = new SROutputStream(udpSocket, this.destination, Utils.incSeqNum(sequenceNumber));
+        this.inputStream = new SRInputStream(udpSocket, this.destination, peerSequenceNumber, this.outputStream);
+        System.out.println("SR Client connected!");
     }
 
-    public SRPacket doHandshake(InetSocketAddress destination, int connectionTimeout, PacketType synType, PacketType expectedAckType) throws IOException {
+    public void implicitConnect(SocketAddress destination, int sequenceNumber, int peerSequenceNumber) {
+        this.outputStream = new SROutputStream(udpSocket, (InetSocketAddress)destination, sequenceNumber);
+        this.inputStream = new SRInputStream(udpSocket, (InetSocketAddress)destination, peerSequenceNumber, this.outputStream);
+    }
+
+    public SRPacket doHandshake(InetSocketAddress destination, int connectionTimeout, PacketType synType, PacketType expectedAckType, int sequenceNumber) throws IOException {
+        return doHandshake(destination, connectionTimeout, synType, expectedAckType, sequenceNumber, 0);
+    }
+
+    public SRPacket doHandshake(InetSocketAddress destination, int connectionTimeout, PacketType synType, PacketType expectedAckType, int sequenceNumber, int ackSequenceNumber) throws IOException {
         CompletableFuture<Void> timedHandshakeFuture = new CompletableFuture<>();
         long connectionTimeoutNanos = connectionTimeout * 1000000L;
         AtomicLong latestConnectionRestart = new AtomicLong(System.nanoTime());
@@ -72,41 +85,43 @@ public class SRSocket implements ISocket, UDPSocketContainer, Closeable {
         Future<Void> handshakeFuture = EXECUTOR.submit(() -> {
             RTOCalculator rtoCalculator = new RTOCalculator();
             boolean isRetransmission = false;
+
             while(true) {
-                CompletableFuture<SRPacket> ackRecFuture = PacketUtils.receiveSRPacketAsync(this, Utils.SR_MAX_PACKET_LENGTH, rtoCalculator.getLatestRto());
+                CompletableFuture<SRPacket> ackRecFuture = PacketUtils.receiveSRPacketAsync(this, rtoCalculator.getLatestRto());
                 Utils.sleep((int)SR_CLOCK_GRANULARITY);
                 try {
-                    SRPacket srPacket = SRPacket.builder()
+                    SRPacket synPacket = SRPacket.builder()
                             .type(synType)
-                            .sequenceNumber(this.sequenceNumber)
-                            .ackSequenceNumber(this.peerSequenceNumber)
+                            .sequenceNumber(sequenceNumber)
+                            .ackSequenceNumber(ackSequenceNumber)
                             .peerAddress(destination.getAddress())
                             .port(destination.getPort())
                             .build();
-                    sendPacket(srPacket);
+                    sendPacket(synPacket);
                 } catch (IOException e) {
                     e.printStackTrace();
                     throw new CompletionException(e);
                 }
-                Instant sendTime = Instant.now();
 
+                Instant sendTime = Instant.now();
                 try {
                     ackRecPacket.set(PacketUtils.awaitTimeoutableSRPacket(ackRecFuture));
                     latestConnectionRestart.set(System.nanoTime());
                     if(!isRetransmission) {
                         rtoCalculator.update(Duration.between(sendTime, Instant.now()).toMillis());
                     }
-                    int nextSequenceNumber = Utils.nextSequenceNumber(this.sequenceNumber);
+                    int nextSequenceNumber = Utils.incSeqNum(sequenceNumber);
                     boolean validAckType = ackRecPacket.get().getType().equals(expectedAckType);
                     boolean validSequenceNumber = ackRecPacket.get().getAckSequenceNumber() == nextSequenceNumber;
                     if (validAckType && validSequenceNumber) {
-                        this.sequenceNumber = nextSequenceNumber;
                         break;
                     }
                     isRetransmission = true;
                 } catch (SocketTimeoutException ignored) {
                     rtoCalculator.onTimeout();
                     isRetransmission = true;
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
             timedHandshakeFuture.complete(null);
@@ -117,7 +132,7 @@ public class SRSocket implements ISocket, UDPSocketContainer, Closeable {
             do {
                 Thread.sleep((latestConnectionRestart.get() + connectionTimeoutNanos - System.nanoTime()) / 1000000);
             } while(System.nanoTime() - latestConnectionRestart.get() < (connectionTimeoutNanos - ((int)SR_CLOCK_GRANULARITY) * 1000000));
-            timedHandshakeFuture.completeExceptionally(new SocketTimeoutException("Socket timed out during handshake"));
+            timedHandshakeFuture.completeExceptionally(new SocketTimeoutException("Socket timed out during handshake (timeout = " + connectionTimeoutNanos / 1000000 + ")"));
             return null;
         });
 
@@ -137,16 +152,13 @@ public class SRSocket implements ISocket, UDPSocketContainer, Closeable {
         }
     }
 
-    public void implicitConnect(SocketAddress destination) {
-        this.inputStream = new SRInputStream(udpSocket);
-        this.outputStream = new SROutputStream(udpSocket, (InetSocketAddress)destination);
-    }
-
     public void sendPacket(SRPacket packet) throws IOException {
         PacketUtils.sendSRPacketToRouter(this, packet);
     }
 
     public void close() {
+        this.inputStream.close();
+        this.outputStream.close();
         this.udpSocket.close();
     }
 }

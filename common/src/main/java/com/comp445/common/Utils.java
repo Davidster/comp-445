@@ -6,10 +6,16 @@ import com.comp445.common.http.HttpStatus;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,14 +34,20 @@ public class Utils {
     public static final int MAX_BODY_SIZE = 100000000; // 100 MB
 
     public static final int ARQ_ROUTER_PORT = 3000;
-    public static final int DEFAULT_SOCKET_TIMEOUT = 5000;
+    public static final int DEFAULT_SOCKET_TIMEOUT = 30000;
 
     public static final int UDP_MAX_PACKET_LENGTH = Short.MAX_VALUE * 2 + 1;
 
     public static final int SR_MAX_PACKET_LENGTH = 1024;
-    public static final int SR_SERVER_CONNECTION_TIMEOUT = 3000;
+    public static final int SR_HEADER_SIZE = 1 + 4 + 4 + 2;
+    public static final int SR_MAX_PAYLOAD_SIZE = SR_MAX_PACKET_LENGTH - SR_HEADER_SIZE;
+    public static final int SR_SERVER_CONNECTION_TIMEOUT = 30000;
     public static final float SR_CLOCK_GRANULARITY = 10f;
+    public static final Duration SR_CLOCK_GRANULARITY_D = Duration.of(Math.round(SR_CLOCK_GRANULARITY), ChronoUnit.MILLIS);
     public static final int SR_MAX_SEQUENCE_NUM = Short.MAX_VALUE * 2;
+//    public static final int SR_WINDOW_SIZE = SR_MAX_SEQUENCE_NUM / 2;
+    public static final int SR_WINDOW_SIZE = 100;
+    public static final int SR_MAX_RTO = 5000;
 
     public static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
 
@@ -44,19 +56,56 @@ public class Utils {
     }
 
     public static String readLine(BufferedInputStream input) throws IOException {
-        StringBuilder sb = new StringBuilder();
+        return new String(readTillDelim(input, "\n".getBytes()));
+    }
+
+    public static byte[] readTillDelim(BufferedInputStream input, byte[] delim) throws IOException {
+        int progressCounter = 0;
+//        ArrayList<Byte> delimList = new ArrayList<>();
+//        for (byte b: delim) {
+//            delimList.add(b);
+//        }
+        ArrayList<Byte> bytes = new ArrayList<>();
+        LinkedList<Byte> endOfList = new LinkedList<>();
+//        byte[] lastBytes = new byte[delimList.size()];
+        byte dataByte;
+        int data;
+        boolean reachedDelim;
         while(true) {
-            int data = input.read();
+            data = input.read();
             if(data == -1) {
+                Thread.onSpinWait();
                 continue;
             }
-            char c = (char) data;
-            if(c == '\n') {
-                break;
+            dataByte = (byte) data;
+            bytes.add(dataByte);
+            endOfList.addLast(dataByte);
+            if(bytes.size() > delim.length) {
+                endOfList.removeFirst();
+                reachedDelim = true;
+                int i = 0;
+                for(byte b: endOfList) {
+                    if(b != delim[i++]) {
+                        reachedDelim = false;
+                        break;
+                    }
+                }
+                if(reachedDelim) {
+                    break;
+                }
             }
-            sb.append(c);
+            if(++progressCounter % 2500 == 0) {
+                System.out.println(String.format("%s / 100000 (%2f)", bytes.size(), bytes.size() / 100000f));
+            }
+//            if (Collections.indexOfSubList(bytes.subList(bytes.size()), delimList) >= 0) {
+//                break;
+//            }
         }
-        return sb.toString();
+        byte[] result = new byte[bytes.size()];
+        for (int i = 0; i < bytes.size(); i++) {
+            result[i] = bytes.get(i);
+        }
+        return result;
     }
 
     public static String parseCliArgString(String rawString) {
@@ -121,8 +170,29 @@ public class Utils {
         });
     }
 
-    public static int nextSequenceNumber(int currentSequenceNumber) {
-        return (currentSequenceNumber + 1) % SR_MAX_SEQUENCE_NUM;
+    public static byte[] toByteArray(ArrayList<Byte> bytes) {
+        byte[] result = new byte[bytes.size()];
+        for (int i = 0; i < bytes.size(); i++) {
+            result[i] = bytes.get(i);
+        }
+        return result;
+    }
+
+    public static int decSeqNum(int currSeqNum) {
+        return ((currSeqNum - 1) + SR_MAX_SEQUENCE_NUM) % SR_MAX_SEQUENCE_NUM;
+    }
+
+    public static int incSeqNum(int currSeqNum) {
+        return (currSeqNum + 1) % SR_MAX_SEQUENCE_NUM;
+    }
+
+    public static boolean seqInWindow(int leftEdge, int newSeqNum) {
+        int windowEdge = (leftEdge + SR_WINDOW_SIZE) % SR_MAX_SEQUENCE_NUM;
+        if(windowEdge > leftEdge) {
+            return newSeqNum >= leftEdge && newSeqNum < windowEdge;
+        } else {
+            return newSeqNum >= leftEdge || newSeqNum < windowEdge;
+        }
     }
 }
 

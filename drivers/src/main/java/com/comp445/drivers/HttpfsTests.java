@@ -41,7 +41,7 @@ public class HttpfsTests {
         Thread serverThread = new Thread(() -> {
             try {
                 httpFileServer.startServer();
-            } catch (IOException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+            } catch (IOException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException | InterruptedException e) {
                 e.printStackTrace();
             }
         });

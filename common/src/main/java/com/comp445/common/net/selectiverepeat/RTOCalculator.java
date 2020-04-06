@@ -1,6 +1,7 @@
 package com.comp445.common.net.selectiverepeat;
 
 import static com.comp445.common.Utils.SR_CLOCK_GRANULARITY;
+import static com.comp445.common.Utils.SR_MAX_RTO;
 
 public class RTOCalculator {
 
@@ -23,7 +24,7 @@ public class RTOCalculator {
         return Math.round(this.latestRto);
     }
 
-    public void update(float latestRtt) {
+    public synchronized void update(float latestRtt) {
         if (latestRtt <= 0) {
             throw new IllegalArgumentException("New RTT value must be above 0ms");
         }
@@ -39,9 +40,11 @@ public class RTOCalculator {
         }
 
         this.latestRto = this.latestSrtt  + Math.max(SR_CLOCK_GRANULARITY, K * this.latestRttvar);
+        this.latestRto = Math.min(this.latestRto, SR_MAX_RTO);
     }
 
-    public void onTimeout() {
+    public synchronized void onTimeout() {
         this.latestRto *= 2;
+        this.latestRto = Math.min(this.latestRto, SR_MAX_RTO);
     }
 }

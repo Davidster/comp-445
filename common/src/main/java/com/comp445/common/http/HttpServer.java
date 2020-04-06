@@ -21,14 +21,16 @@ public class HttpServer {
     private int port;
     private Function<HttpRequest, HttpResponse> requestHandler;
 
-    public void start() throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        IServerSocket serverSocket = serverSocketClass.getConstructor(int.class).newInstance(port);
+    public void start() throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, InterruptedException {
 
         //noinspection InfiniteLoopStatement
         while (true) {
+            IServerSocket serverSocket = serverSocketClass.getConstructor(int.class).newInstance(port);
+
             ISocket serverClientSocket = serverSocket.acceptClient();
             BufferedInputStream serverInputStream = new BufferedInputStream(serverClientSocket.getInputStream());
             OutputStream serverOutputStream = serverClientSocket.getOutputStream();
+
             HttpRequest request = HttpRequest.fromInputStream(serverInputStream);
 
             HttpResponse response = requestHandler != null ? requestHandler.apply(request) : DEFAULT_RESPONSE;
@@ -36,8 +38,11 @@ public class HttpServer {
             serverOutputStream.write(response.toByteArray());
             serverOutputStream.flush();
 
+            serverSocket.close();
+            serverClientSocket.close();
             serverOutputStream.close();
             serverInputStream.close();
+            Thread.sleep(25);
         }
     }
 }

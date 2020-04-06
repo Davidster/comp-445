@@ -1,10 +1,7 @@
 package com.comp445.httpfs;
 
 import com.comp445.common.Utils;
-import com.comp445.common.http.HttpResponse;
-import com.comp445.common.http.HttpServer;
-import com.comp445.common.http.HttpStatus;
-import com.comp445.common.http.UDPHttpServer;
+import com.comp445.common.http.*;
 import com.comp445.common.logger.LogLevel;
 import com.comp445.common.logger.Logger;
 import com.comp445.httpfs.argparser.ArgParser;
@@ -37,7 +34,7 @@ public class Httpfs {
 
     private HttpfsOptions options;
 
-    public static void main(String[] args) throws ParseException, IOException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+    public static void main(String[] args) throws ParseException, IOException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, InterruptedException {
         if(args.length > 0 && args[0].equals("help")) {
             Logger.log(BASE_HELP);
             return;
@@ -46,7 +43,7 @@ public class Httpfs {
         new Httpfs(new ArgParser(args).parse()).startServer();
     }
 
-    public void startServer() throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public void startServer() throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, InterruptedException {
 
         TemplateManager.init();
 

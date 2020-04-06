@@ -7,7 +7,7 @@ import java.net.InetAddress;
 
 import static com.comp445.common.Utils.doAssert;
 
-public class RouterPacketSerializationTest {
+public class SRPacketTests {
     public static void main(String[] args) throws Exception {
 
         PacketType packetType = PacketType.NACK;

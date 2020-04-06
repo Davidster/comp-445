@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static com.comp445.common.Utils.EXECUTOR;
 
-public class SRTests {
+public class SRHandshakeTests {
 
     public static final int REC_PORT = 8888;
 
@@ -51,7 +51,7 @@ public class SRTests {
             }
         }, EXECUTOR);
 
-        srClient.connect(new InetSocketAddress(InetAddress.getByName("localhost"), REC_PORT), 10000);
+        srClient.connect(new InetSocketAddress(InetAddress.getByName("localhost"), REC_PORT), 30000);
         System.out.println(System.currentTimeMillis() + " Client connected in " + Duration.between(start, Instant.now()).toMillis() + "ms");
 
         serverFuture.join();

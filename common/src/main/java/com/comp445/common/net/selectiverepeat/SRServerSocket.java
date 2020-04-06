@@ -11,8 +11,7 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-
-import static com.comp445.common.Utils.SR_MAX_PACKET_LENGTH;
+import java.util.Random;
 
 @Getter
 public class SRServerSocket implements IServerSocket, UDPSocketContainer, Closeable {
@@ -25,23 +24,25 @@ public class SRServerSocket implements IServerSocket, UDPSocketContainer, Closea
 
     public SRSocket acceptClient() throws IOException {
         while (true) {
-            SRPacket synRecPacket = PacketUtils.receiveSRPacket(this, SR_MAX_PACKET_LENGTH);
+            SRPacket synRecPacket = PacketUtils.receiveSRPacket(this);
             if (!synRecPacket.getType().equals(PacketType.SYN)) {
                 continue;
             }
 
             InetSocketAddress inetDestination = new InetSocketAddress(synRecPacket.getPeerAddress(), synRecPacket.getPort());
+            int sequenceNumber = new Random().nextInt(Utils.SR_MAX_SEQUENCE_NUM);
+            int peerSequenceNumber = Utils.incSeqNum(synRecPacket.getSequenceNumber());
             SRSocket clientSocket = new SRSocket(this.udpSocket);
-            clientSocket.setPeerSequenceNumber(Utils.nextSequenceNumber(synRecPacket.getSequenceNumber()));
             try {
-                SRPacket ackPacket = clientSocket.doHandshake(inetDestination, Utils.SR_SERVER_CONNECTION_TIMEOUT, PacketType.SYNACK, PacketType.ACK);
+                SRPacket ackPacket = clientSocket.doHandshake(inetDestination, Utils.SR_SERVER_CONNECTION_TIMEOUT, PacketType.SYNACK, PacketType.ACK, sequenceNumber, peerSequenceNumber);
             } catch(SocketTimeoutException e) {
-                System.out.println("Socket timeout");
+//                System.out.println("Socket timeout");
 //                continue;
                 return null;
             }
 
-            clientSocket.implicitConnect(inetDestination);
+            clientSocket.implicitConnect(inetDestination, Utils.incSeqNum(sequenceNumber), peerSequenceNumber);
+//            System.out.println("SR Server connected!");
             return clientSocket;
         }
     }

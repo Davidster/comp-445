@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.comp445.common.Utils.SR_MAX_PACKET_LENGTH;
+import static com.comp445.common.Utils.SR_HEADER_SIZE;
 
 @AllArgsConstructor
 @Getter
@@ -17,7 +17,7 @@ import static com.comp445.common.Utils.SR_MAX_PACKET_LENGTH;
 @EqualsAndHashCode
 @ToString
 @Builder
-public class SRPacket {
+public class SRPacket implements Comparable<SRPacket> {
 
     private PacketType type; // 1 byte
     private int sequenceNumber; // 2 bytes
@@ -25,9 +25,6 @@ public class SRPacket {
     private InetAddress peerAddress; // 4 bytes
     private int port; // 2 bytes
     @Builder.Default private byte[] payload = new byte[0]; // variable length
-
-    private static final int MIN_PACKET_SIZE = 1 + 4 + 4 + 2;
-    public static final int MAX_PAYLOAD_SIZE = SR_MAX_PACKET_LENGTH - MIN_PACKET_SIZE;
 
     public final List<PacketType> ACK_PACKET_TYPES = Arrays.asList(PacketType.ACK, PacketType.SYNACK);
 
@@ -39,7 +36,7 @@ public class SRPacket {
                 byteBuffer.getShort(3) & 0xffff,
                 InetAddress.getByAddress(Arrays.copyOfRange(bytes, 5, 9)),
                 byteBuffer.getShort(9) & 0xffff,
-                Arrays.copyOfRange(bytes, MIN_PACKET_SIZE, bytes.length)
+                Arrays.copyOfRange(bytes, SR_HEADER_SIZE, bytes.length)
         );
     }
 
@@ -48,7 +45,7 @@ public class SRPacket {
     }
 
     public byte[] toByteArray() {
-        return ByteBuffer.allocate(MIN_PACKET_SIZE + this.payload.length)
+        return ByteBuffer.allocate(SR_HEADER_SIZE + this.payload.length)
                 .put(this.type.getValue())
                 .putShort((short) this.sequenceNumber)
                 .putShort((short) this.ackSequenceNumber)
@@ -56,5 +53,10 @@ public class SRPacket {
                 .putShort((short) this.port)
                 .put(this.payload)
                 .array();
+    }
+
+    @Override
+    public int compareTo(SRPacket other) {
+        return Integer.compare(sequenceNumber, other.sequenceNumber);
     }
 }
