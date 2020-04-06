@@ -56,6 +56,8 @@ public class SRInputStream extends InputStream implements UDPSocketContainer {
                     SRPacket recPacket = recPacketFuture.join();
                     recPacketFuture = PacketUtils.receiveSRPacketAsync(this);
 
+//                    System.out.println(recPacket.toString());
+
                     switch(recPacket.getType()) {
                         case DATA:
                             handleDataPacket(recPacket);

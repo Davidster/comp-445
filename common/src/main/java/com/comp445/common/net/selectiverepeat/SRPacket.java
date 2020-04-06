@@ -26,8 +26,6 @@ public class SRPacket implements Comparable<SRPacket> {
     private int port; // 2 bytes
     @Builder.Default private byte[] payload = new byte[0]; // variable length
 
-    public final List<PacketType> ACK_PACKET_TYPES = Arrays.asList(PacketType.ACK, PacketType.SYNACK);
-
     public static SRPacket fromByteArray(byte[] bytes) throws UnknownHostException {
         ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
         return new SRPacket(

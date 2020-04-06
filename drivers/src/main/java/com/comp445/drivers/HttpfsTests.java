@@ -18,6 +18,7 @@ import static com.comp445.common.Utils.doAssert;
 
 public class HttpfsTests {
 
+    // good router settings: ./bin/router_x64 --port=3000 --drop-rate=0.05 --max-delay=1s --seed=1
     public static void main(String[] args) throws IOException {
         Logger.logLevel = LogLevel.VERBOSE;
 
@@ -56,50 +57,50 @@ public class HttpfsTests {
             HttpResponse file1CreationResponse = httpClient.performRequest(new HttpRequest(HttpMethod.POST, file1Url, new HttpHeaders(), file1Content.getBytes()));
             doAssert(file1CreationResponse.getStatus().getCode() == 201);
 
-            Thread.sleep(10);
+            Thread.sleep(100);
 
             URL file2Url = new URL(String.format("%s/%s", baseUrl, file2Name));
             HttpResponse file2CreationResponse = httpClient.performRequest(new HttpRequest(HttpMethod.POST, file2Url, new HttpHeaders(), file2Content.getBytes()));
             doAssert(file2CreationResponse.getStatus().getCode() == 201);
 
-            Thread.sleep(10);
+            Thread.sleep(100);
 
             HttpResponse file1RetrievalResponse = httpClient.performRequest(new HttpRequest(HttpMethod.GET, file1Url, new HttpHeaders()));
             doAssert(file1RetrievalResponse.getStatus().getCode() == 200);
             doAssert(new String(file1RetrievalResponse.getBody()).equals(file1Content));
 
-            Thread.sleep(10);
+            Thread.sleep(100);
 
             HttpResponse file2RetrievalResponse = httpClient.performRequest(new HttpRequest(HttpMethod.GET, file2Url, new HttpHeaders()));
             doAssert(file2RetrievalResponse.getStatus().getCode() == 200);
             doAssert(new String(file2RetrievalResponse.getBody()).equals(file2Content));
 
-            Thread.sleep(10);
+            Thread.sleep(100);
 
             HttpResponse fileListingResponse = httpClient.performRequest(new HttpRequest(HttpMethod.GET, new URL(baseUrl), new HttpHeaders()));
             doAssert(fileListingResponse.getStatus().getCode() == 200);
             doAssert(new String(fileListingResponse.getBody()).contains(file1Name));
             doAssert(new String(fileListingResponse.getBody()).contains(file2Name));
 
-            Thread.sleep(10);
+            Thread.sleep(100);
 
             URL nonExistantFileUrl = new URL(String.format("%s/%s", baseUrl, nonExistantFileName));
             HttpResponse nonExistantRetrievalResponse = httpClient.performRequest(new HttpRequest(HttpMethod.GET, nonExistantFileUrl, new HttpHeaders()));
             doAssert(nonExistantRetrievalResponse.getStatus().getCode() == 404);
 
-            Thread.sleep(10);
+            Thread.sleep(100);
 
             URL illegalFolderUrl = new URL(String.format("%s/../", baseUrl));
             HttpResponse illegalFolderResponse = httpClient.performRequest(new HttpRequest(HttpMethod.GET, illegalFolderUrl, new HttpHeaders()));
             doAssert(illegalFolderResponse.getStatus().getCode() == 403);
 
-            Thread.sleep(10);
+            Thread.sleep(100);
 
             HttpResponse writeToFolderResponse = httpClient.performRequest(new HttpRequest(HttpMethod.POST, new URL(baseUrl), new HttpHeaders()));
             doAssert(writeToFolderResponse.getStatus().getCode() == 400);
             doAssert(new String(writeToFolderResponse.getBody()).contains("Destination path is a directory"));
 
-            Thread.sleep(10);
+            Thread.sleep(100);
 
             HttpResponse nullBodyResponse = httpClient.performRequest(new HttpRequest(HttpMethod.POST, file1Url, new HttpHeaders()));
             doAssert(nullBodyResponse.getStatus().getCode() == 400);

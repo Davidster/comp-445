@@ -42,7 +42,7 @@ public class HttpServer {
             serverClientSocket.close();
             serverOutputStream.close();
             serverInputStream.close();
-            Thread.sleep(25);
+            Thread.sleep(100);
         }
     }
 }
